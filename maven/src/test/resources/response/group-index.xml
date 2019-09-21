@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foo.bar>
+    <artifact1 versions="2.0.0-alpha1,2.0.0-beta01,2.0.0-rc01,2.0.0,2.1.0-alpha01" />
+    <artifact-2 versions="2.0.0-alpha2,2.0.0-beta02,2.0.0-rc02,2.0.0,2.1.0-alpha02" />
+    <artifact-compiler versions="2.0.0-alpha1,2.0.0-beta01,2.0.0-rc01,2.0.0,2.1.0-alpha01" />
+</foo.bar>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <androidx.foo.bar />
+    <android.arch.shouldBeIgnored />
+    <com.android.support.shouldBeIgnored />
+    <androidx.baz.bar />
+</metadata>

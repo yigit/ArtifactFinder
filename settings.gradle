@@ -1,0 +1,3 @@
+rootProject.name = 'ArtifactFinder'
+include ':parser'
+include ':maven'
