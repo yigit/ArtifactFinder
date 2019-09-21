@@ -11,10 +11,9 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.io.File
 
 @RunWith(JUnit4::class)
-class ArtifactFinderTest {
+class CodeSourceParserTest {
     @Rule
     @JvmField
     val tmpFolder = TemporaryFolder()
@@ -36,7 +35,7 @@ class ArtifactFinderTest {
             ).buildAar()
         } else {
             Aar(
-                ArtifactFinderTest::class.java.getResourceAsStream("/lib-release.aar")
+                CodeSourceParserTest::class.java.getResourceAsStream("/lib-release.aar")
             )
         }
         val artifactInfo = CodeSourceParser.parse(aarOutput)
