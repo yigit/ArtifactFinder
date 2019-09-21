@@ -19,9 +19,10 @@ class ArtifactFinderTest {
     @JvmField
     val tmpFolder = TemporaryFolder()
 
-    val rebuild = false
+    val rebuild = true
     @Test
     fun compilation() {
+        @Suppress("ConstantConditionIf")
         val aarOutput = if (rebuild) {
             TestApk(
                 // TODO test anonymous nested class
@@ -31,7 +32,7 @@ class ArtifactFinderTest {
                     SRC_KOTLIN_INNER_CLASS, SRC_KOTLIN_INVISIBLE_OUTER_CLASS,
                     SRC_LOWERCASE
                 ),
-                tmpFolder = File("/home/yboyar/ArtifactFinderTest")//tmpFolder.newFolder()
+                tmpFolder = tmpFolder.newFolder()
             ).buildAar()
         } else {
             Aar(
@@ -89,10 +90,6 @@ class ArtifactFinderTest {
                 )
             )
         )
-
-        artifactInfo.let {
-            println(it)
-        }
     }
 
     companion object {

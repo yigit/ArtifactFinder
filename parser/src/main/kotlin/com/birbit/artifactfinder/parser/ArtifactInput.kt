@@ -42,7 +42,6 @@ private fun ZipInputStream.asClassFileSequence(): Sequence<ClassZipEntry> {
             while (next != null) {
                 if (next.name.endsWith(".class")) {
                     val bytes = this@asClassFileSequence.readBytes()
-                    println("size for ${next.name} is ${bytes.size}")
 
                     yield(
                         ClassZipEntry(
