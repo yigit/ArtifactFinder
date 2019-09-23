@@ -1,12 +1,12 @@
 package com.birbit.artifactfinder.parser
 
-import com.birbit.artifactfinder.parser.vo.ClassInfo
+import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
 
 // exclude filters for class names
 
-typealias ExclusionFilter = (ClassInfo) -> Boolean
+typealias ExclusionFilter = (ParsedClassInfo) -> Boolean
 
-private fun BUILD_CONFIG(classInfo: ClassInfo) = classInfo.name == "BuildConfig" ||
+private fun BUILD_CONFIG(classInfo: ParsedClassInfo) = classInfo.name == "BuildConfig" ||
         classInfo.name == "R"
-private fun LOWERCASE(classInfo: ClassInfo) = classInfo.name[0].isLowerCase()
+private fun LOWERCASE(classInfo: ParsedClassInfo) = classInfo.name[0].isLowerCase()
 val EXCLUSION_FILTERS = listOf<ExclusionFilter>(::BUILD_CONFIG, ::LOWERCASE)

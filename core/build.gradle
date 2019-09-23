@@ -1,19 +1,12 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation libs.kotlinRuntime
-    implementation libs.asm
-    implementation libs.kotlinMetadata
-    implementation project(path: ":core", configuration: "default")
-    testImplementation libs.junit
-    testImplementation libs.truth
-    testImplementation gradleTestKit()
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+sourceCompatibility = "8"
+targetCompatibility = "8"
 buildscript {
     ext.kotlin_version = '1.3.50'
     repositories {

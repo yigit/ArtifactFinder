@@ -2,31 +2,22 @@ package com.birbit.artifactfinder.parser.vo
 
 import com.birbit.artifactfinder.parser.EXCLUSION_FILTERS
 
-/**
- * Parsed information about an artifact
- */
-data class ArtifactInfo(
-    val classes: Set<ClassInfo>,
-    val globalMethods: Set<GlobalMethodInfo>,
-    val extensionMethods: Set<ExtensionMethodInfo>
-)
-
 internal data class ArtifactInfoBuilder(
-    private val classes: MutableSet<ClassInfo> = mutableSetOf(),
-    private val globalMethods: MutableSet<GlobalMethodInfo> = mutableSetOf(),
-    private val extensionMethods: MutableSet<ExtensionMethodInfo> = mutableSetOf(),
+    private val classes: MutableSet<ParsedClassInfo> = mutableSetOf(),
+    private val globalMethods: MutableSet<ParsedGlobalMethodInfo> = mutableSetOf(),
+    private val extensionMethods: MutableSet<ParsedExtensionMethodInfo> = mutableSetOf(),
     private val innerClasses: MutableSet<InnerClassInfo> = mutableSetOf()
 ) {
-    fun build(): ArtifactInfo {
+    fun build(): ParsedArtifactInfo {
         val allAvailableClasses = mergeEligibleInnerClasses(classes, innerClasses)
-        return ArtifactInfo(
+        return ParsedArtifactInfo(
             classes = allAvailableClasses,
             globalMethods = globalMethods,
             extensionMethods = extensionMethods
         )
     }
 
-    fun add(classInfo: ClassInfo): ArtifactInfoBuilder {
+    fun add(classInfo: ParsedClassInfo): ArtifactInfoBuilder {
         if (EXCLUSION_FILTERS.none { it(classInfo) }) {
             classes.add(classInfo)
         }
@@ -45,10 +36,10 @@ internal data class ArtifactInfoBuilder(
      * Traverse parents for inner classes to decide if they are truly visible.
      */
     private fun mergeEligibleInnerClasses(
-        classes: Set<ClassInfo>,
+        classes: Set<ParsedClassInfo>,
         innerClasses: Set<InnerClassInfo>
-    ): Set<ClassInfo> {
-        val result = mutableSetOf<ClassInfo>()
+    ): Set<ParsedClassInfo> {
+        val result = mutableSetOf<ParsedClassInfo>()
         result.addAll(classes)
         val candidates = mutableSetOf<InnerClassInfo>().also {
             it.addAll(innerClasses)
@@ -72,12 +63,12 @@ internal data class ArtifactInfoBuilder(
         return result
     }
 
-    fun add(func: ExtensionMethodInfo): ArtifactInfoBuilder {
+    fun add(func: ParsedExtensionMethodInfo): ArtifactInfoBuilder {
         extensionMethods.add(func)
         return this
     }
 
-    fun add(func: GlobalMethodInfo): ArtifactInfoBuilder {
+    fun add(func: ParsedGlobalMethodInfo): ArtifactInfoBuilder {
         globalMethods.add(func)
         return this
     }

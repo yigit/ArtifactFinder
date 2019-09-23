@@ -3,9 +3,9 @@ package com.birbit.artifactfinder.parser
 import com.birbit.artifactfinder.parser.testapk.ArtifactInfoSubject
 import com.birbit.artifactfinder.parser.testapk.SourceFile
 import com.birbit.artifactfinder.parser.testapk.TestApk
-import com.birbit.artifactfinder.parser.vo.ClassInfo
-import com.birbit.artifactfinder.parser.vo.ExtensionMethodInfo
-import com.birbit.artifactfinder.parser.vo.GlobalMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
+import com.birbit.artifactfinder.parser.vo.ParsedExtensionMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedGlobalMethodInfo
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -41,47 +41,47 @@ class CodeSourceParserTest {
         val artifactInfo = CodeSourceParser.parse(aarOutput)
         ArtifactInfoSubject.assertThat(artifactInfo).hasExactClasses(
             listOf(
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "User"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "AnotherClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "OuterClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "OuterClass\$InnerClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "OuterClass\$InnerClass\$DoubleInnerClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "KotlinOuterClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "KotlinOuterClass\$KotlinInnerClass"
                 ),
-                ClassInfo(
+                ParsedClassInfo(
                     pkg = "com.test",
                     name = "KotlinOuterClass\$KotlinInnerClass\$KotlinDoubleInnerClass"
                 )
             )
         ).hasExactGlobalMethods(
             listOf(
-                GlobalMethodInfo("globalMethod")
+                ParsedGlobalMethodInfo("globalMethod")
             )
         ).hasExactExtensionMethods(
             listOf(
-                ExtensionMethodInfo(
-                    receiver = ClassInfo(
+                ParsedExtensionMethodInfo(
+                    receiver = ParsedClassInfo(
                         pkg = "kotlin",
                         name = "String"
                     ),

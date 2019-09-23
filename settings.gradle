@@ -1,3 +1,5 @@
 rootProject.name = 'ArtifactFinder'
+include ':core'
 include ':parser'
 include ':maven'
+include ':model'

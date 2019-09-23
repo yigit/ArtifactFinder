@@ -1,18 +1,18 @@
 package com.birbit.artifactfinder.parser
 
-import com.birbit.artifactfinder.parser.vo.ClassInfo
+import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
 
 
 internal fun String.toClassInfo() = split('/').let {
     if (it.isEmpty()) {
         throw IllegalArgumentException("there is no package name / class name in $this")
     } else if (it.size < 2) {
-        ClassInfo(
+        ParsedClassInfo(
             pkg = "",
             name = it[1].replace('.', '$') // for kotlin inner classes
         )
     } else {
-        ClassInfo(
+        ParsedClassInfo(
             pkg = it.take(it.size - 1).joinToString("."),
             name = it.last().replace('.', '$')
         )

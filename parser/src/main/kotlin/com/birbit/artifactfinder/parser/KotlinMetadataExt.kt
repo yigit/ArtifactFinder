@@ -1,7 +1,7 @@
 package com.birbit.artifactfinder.parser
 
-import com.birbit.artifactfinder.parser.vo.ExtensionMethodInfo
-import com.birbit.artifactfinder.parser.vo.GlobalMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedExtensionMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedGlobalMethodInfo
 import com.birbit.artifactfinder.parser.vo.InnerClassInfo
 import kotlinx.metadata.Flag
 import kotlinx.metadata.Flags
@@ -54,9 +54,9 @@ internal fun KmClass.toInnerClassInfo(): InnerClassInfo {
 
 internal fun KmFunction.isExtensionMethod() = this.receiverParameterType != null
 
-internal fun KmFunction.toGlobalFunction() = GlobalMethodInfo(name)
+internal fun KmFunction.toGlobalFunction() = ParsedGlobalMethodInfo(name)
 
-internal fun KmFunction.toExtensionFunction() = ExtensionMethodInfo(
+internal fun KmFunction.toExtensionFunction() = ParsedExtensionMethodInfo(
     receiver = receiverParameterType!!.toClassInfo(),
     name = name
 )

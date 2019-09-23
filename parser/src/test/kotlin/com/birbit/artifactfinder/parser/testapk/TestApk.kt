@@ -76,7 +76,7 @@ class TestApk(
         @Suppress("UnstableApiUsage")
         val result = GradleRunner.create()
             .withProjectDir(tmpFolder)
-            .withArguments("--offline", ":lib:assembleRelease")
+            .withArguments(":lib:assembleRelease")
             .withEnvironment(
                 mapOf(
                     "ANDROID_HOME" to "/home/yboyar/android/sdk" // TODO

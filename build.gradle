@@ -14,7 +14,12 @@ buildscript {
             jacksonKotlin    : 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9',
             jacksonXml       : 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9',
             mockWebServer    : 'com.squareup.okhttp3:mockwebserver:4.2.0',
-            okHttp           : 'com.squareup.okhttp3:okhttp:4.2.0'
+            okHttp           : 'com.squareup.okhttp3:okhttp:4.2.0',
+            roomJdbc         : 'com.birbit.roomjdbc:roomjdbc:0.1',
+            roomCompiler     : 'androidx.room:room-compiler:2.2.0-rc01',
+            roomCommon       : 'androidx.room:room-compiler:2.2.0-rc01',
+            guava            : 'com.google.guava:guava:28.1-android'
+
     ]
     repositories {
         google()
@@ -34,7 +39,9 @@ allprojects {
     repositories {
         google()
         jcenter()
-
+        maven {
+            url "file://${rootProject.projectDir}/roomjdbc"
+        }
     }
 }
 
