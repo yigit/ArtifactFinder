@@ -1,7 +1,6 @@
 package com.birbit.artifactfinder.model
 
 import androidx.room.TypeConverter
-import androidx.room.TypeConverters
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -21,6 +20,7 @@ data class Version(
 
     val isBeta = extra?.toLowerCase()?.startsWith("-beta") ?: false
     val isAlpha = extra?.toLowerCase()?.startsWith("-alpha") ?: false
+    val isRc = extra?.toLowerCase()?.startsWith("-rc") ?: false
     val isRelease = extra == null
 
     override fun toString(): String {
@@ -57,6 +57,7 @@ data class Version(
     class RoomTypeConverter {
         @TypeConverter
         fun fromString(input: String) = Version.fromString(input)
+
         @TypeConverter
         fun convertToString(input: Version) = input.toString()
     }

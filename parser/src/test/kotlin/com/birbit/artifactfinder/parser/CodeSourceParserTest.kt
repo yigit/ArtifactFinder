@@ -11,6 +11,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.io.File
 
 @RunWith(JUnit4::class)
 class CodeSourceParserTest {
@@ -18,21 +19,33 @@ class CodeSourceParserTest {
     @JvmField
     val tmpFolder = TemporaryFolder()
 
-    val rebuild = true
+    val rebuild = false
     @Test
     fun compilation() {
         @Suppress("ConstantConditionIf")
         val aarOutput = if (rebuild) {
+            val outFolder = tmpFolder.newFolder()
             TestApk(
                 // TODO test anonymous nested class
                 // TODO test nested of inner
                 sources = listOf(
                     SRC_USER, SRC_INNER_CLASS, SRC_INVISIBLE_OUTER_CLASS,
                     SRC_KOTLIN_INNER_CLASS, SRC_KOTLIN_INVISIBLE_OUTER_CLASS,
-                    SRC_LOWERCASE
+                    SRC_LOWERCASE, SRC_RESTRICTED, SRC_KOTLIN_RESTRICTED
                 ),
-                tmpFolder = tmpFolder.newFolder()
-            ).buildAar()
+                tmpFolder = outFolder
+            ).buildAar().also {
+                val resourceAar = File("src/test/resources/lib-release.aar")
+                if(resourceAar.exists()) {
+                    // copy into resources
+                    outFolder.resolve("lib/build/outputs/aar/lib-release.aar").also {
+                        check(it.exists())
+                    }.copyTo(resourceAar, overwrite = true)
+                    println("copied output to resources")
+                } else {
+                    println("no resources to copy to in ${resourceAar.absoluteFile.absolutePath}")
+                }
+            }
         } else {
             Aar(
                 CodeSourceParserTest::class.java.getResourceAsStream("/lib-release.aar")
@@ -99,6 +112,12 @@ class CodeSourceParserTest {
                 data class User(val age:Int)
                 class AnotherClass {
                     fun anotherClassMethod() = 3
+                    companion object {
+                        private fun companionMethod() {
+                        }
+                        // TODO should this be included? probably yes but companion is not :/
+                        fun String.companionExt() = 3
+                    }
                 }
                 fun String.myMethod(myArg:Int) : Long = 3L
                 fun globalMethod(someArg : String) : String = "foo"
@@ -115,6 +134,19 @@ class CodeSourceParserTest {
                 }
             """.trimIndent()
         )
+
+        val SRC_RESTRICTED = SourceFile(
+            path = "com/test/MyRestricted.java",
+            code = """
+                package com.test;
+                import androidx.annotation.RestrictTo;
+                @RestrictTo(RestrictTo.Scope.LIBRARY)
+                public class MyRestricted {
+                
+                }
+            """.trimIndent()
+        )
+
         val SRC_INNER_CLASS = SourceFile(
             path = "com/test/OuterClass.java",
             code = """
@@ -169,5 +201,17 @@ class CodeSourceParserTest {
             """.trimIndent()
         )
 
+        val SRC_KOTLIN_RESTRICTED = SourceFile(
+            path = "com/test/MyRestrictedKotlin.kt",
+            code = """
+                package com.test
+                import androidx.annotation.RestrictTo
+                
+                @RestrictTo(RestrictTo.Scope.LIBRARY)
+                public class MyRestrictedKotlin {
+                
+                }
+            """.trimIndent()
+        )
     }
 }

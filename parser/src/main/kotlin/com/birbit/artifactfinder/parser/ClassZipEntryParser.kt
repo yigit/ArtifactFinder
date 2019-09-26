@@ -10,13 +10,14 @@ import org.objectweb.asm.tree.ClassNode
 
 internal object ClassZipEntryParser {
     fun parse(classZipEntry: ClassZipEntry, builder: ArtifactInfoBuilder) {
+        // TODO exclude restrict to etc
         val node = ClassNode(Opcodes.ASM7)
         val reader = ClassReader(classZipEntry.stream)
         reader.accept(node, skippedParts)
         val metadata = node.kotlinMetadataAnnotation()
 
         if (metadata != null) {
-            parseMetadata(metadata, builder)
+            parseMetadata(metadata, node, builder)
         } else {
             parseJavaClass(node, builder)
         }
@@ -36,13 +37,13 @@ internal object ClassZipEntryParser {
 
     private fun parseMetadata(
         metadata: KotlinClassMetadata,
+        node: ClassNode,
         into: ArtifactInfoBuilder
     ) {
         when (metadata) {
             is KotlinClassMetadata.Class -> {
                 val kmClass = metadata.toKmClass()
-                // TODO check outer class
-                val isVisible = kmClass.isVisibleFromOutside()
+                val isVisible = kmClass.isVisibleFromOutside() && node.isVisibleFromOutside()
                 if (!isVisible) {
                     return
                 }

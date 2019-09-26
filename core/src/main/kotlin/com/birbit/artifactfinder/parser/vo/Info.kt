@@ -4,9 +4,9 @@ package com.birbit.artifactfinder.parser.vo
  * Parsed information about an artifact
  */
 data class ParsedArtifactInfo(
-    val classes: Set<ParsedClassInfo>,
-    val globalMethods: Set<ParsedGlobalMethodInfo>,
-    val extensionMethods: Set<ParsedExtensionMethodInfo>
+    val classes: Set<ParsedClassInfo> = emptySet(),
+    val globalMethods: Set<ParsedGlobalMethodInfo> = emptySet(),
+    val extensionMethods: Set<ParsedExtensionMethodInfo> = emptySet()
 )
 
 /**

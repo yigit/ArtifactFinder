@@ -8,6 +8,7 @@ import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
+import java.util.concurrent.Executors
 
 internal interface MavenApi {
     companion object {
@@ -18,6 +19,7 @@ internal interface MavenApi {
             val builder = Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(JacksonConverterFactory())
+                .callbackExecutor(Executors.newSingleThreadExecutor())
                 .build()
             return builder.create(MavenApi::class.java)
         }

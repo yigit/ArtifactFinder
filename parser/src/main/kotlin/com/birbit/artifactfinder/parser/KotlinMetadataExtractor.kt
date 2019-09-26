@@ -9,7 +9,9 @@ import org.objectweb.asm.tree.AnnotationNode
  */
 @Suppress("UNCHECKED_CAST")
 internal fun AnnotationNode.extractKotlinMetadata(): KotlinClassMetadata? {
-    desc ?: return null
+    // TODO need to check if this is kotlin metada
+    if (desc != "Lkotlin/Metadata;") return null
+
     val values = values ?: return null
     var k: Int? = null
     var mv: ArrayList<Int>? = null
@@ -29,11 +31,14 @@ internal fun AnnotationNode.extractKotlinMetadata(): KotlinClassMetadata? {
                 "d1" -> d1 = it as ArrayList<String>
                 "d2" -> d2 = it as ArrayList<String>
                 else -> {
-                    throw IllegalArgumentException("unknown key: $key")
+                    println("unknown key: $key from ${this.desc}")
                 }
             }
             key = null
         }
+    }
+    if (k == null || mv == null || bv == null || d1 == null || d2 == null) {
+        return null
     }
 
     val header = KotlinClassHeader(

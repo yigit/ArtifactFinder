@@ -28,7 +28,8 @@ fun moduleBuildFile(
     }
     
     dependencies {
-        implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:${"$"}kotlin_version"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${"$"}kotlin_version"
+        implementation "androidx.annotation:annotation:1.1.0"
     }
 
 """.trimIndent()

@@ -4,6 +4,7 @@ import com.google.common.truth.Truth
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 @RunWith(JUnit4::class)
@@ -12,7 +13,8 @@ class ArtifactFinderDbTest {
     fun checkLikePragmaOff() {
         val db = ArtifactFinderDatabase.create(
             name = null,
-            executor = Executors.newSingleThreadExecutor())
+            readExecutor = Executors.newSingleThreadExecutor(),
+            writeExecutor = Executors.newSingleThreadExecutor())
         try {
             db.query("SELECT 'a' LIKE 'A'", emptyArray()).use {
                 it.moveToFirst()
