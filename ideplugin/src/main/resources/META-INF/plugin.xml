@@ -1,0 +1,21 @@
+<idea-plugin>
+    <id>com.birbit.artifactfinder</id>
+    <name>Artifact Finder</name>
+    <version>0.0.1</version>
+    <vendor email="dummy" url="dummy">dummy</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <idea-version since-build="191"/>
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+    <actions>
+        <group id="MyPlugin.SampleMenu" text="Search Artifact" description="Search Maven Artifacts by Class Name">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action id="Myplugin.Textboxes" class="com.birbit.artifactfinder.ideplugin.SearchArtifactAction"
+                    text="SearchArtifact" description="Find maven artifacts by class name"/>
+        </group>
+    </actions>
+
+</idea-plugin>
