@@ -9,13 +9,18 @@
     <idea-version since-build="191"/>
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
+    <depends>org.jetbrains.kotlin</depends>
+    <depends>org.jetbrains.android</depends>
 
     <actions>
         <group id="MyPlugin.SampleMenu" text="Search Artifact" description="Search Maven Artifacts by Class Name">
-            <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="Myplugin.Textboxes" class="com.birbit.artifactfinder.ideplugin.SearchArtifactAction"
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="ArtifactFinder.SearchArtifact" class="com.birbit.artifactfinder.ideplugin.SearchArtifactAction"
                     text="SearchArtifact" description="Find maven artifacts by class name"/>
         </group>
     </actions>
 
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <quickFixContributor implementation="com.birbit.artifactfinder.ideplugin.KotlinImportResolver"/>
+    </extensions>
 </idea-plugin>
