@@ -280,7 +280,7 @@ class ArtifactFinderDb(
         limit = if (name == null) 1 else 4,
         createConnection = {
             val id = name ?: ":memory:"
-            JdbcWriteableDbDriver(DriverManager.getConnection("jdbc:sqlite:$id")).also {
+            JdbcWriteableDbDriver(DriverManager.getConnection("jdbc:sqlite:$id?journal_mode=WAL")).also {
                 it.conn.prepareStatement("PRAGMA foreign_keys = ON;").execute()
                 it.conn.prepareStatement("PRAGMA case_sensitive_like=ON;").execute()
             }

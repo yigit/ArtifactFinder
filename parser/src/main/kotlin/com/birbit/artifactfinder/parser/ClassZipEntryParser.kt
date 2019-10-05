@@ -10,7 +10,6 @@ import org.objectweb.asm.tree.ClassNode
 
 internal object ClassZipEntryParser {
     fun parse(classZipEntry: ClassZipEntry, builder: ArtifactInfoBuilder) {
-        // TODO exclude restrict to etc
         val node = ClassNode(Opcodes.ASM7)
         val reader = ClassReader(classZipEntry.stream)
         reader.accept(node, skippedParts)

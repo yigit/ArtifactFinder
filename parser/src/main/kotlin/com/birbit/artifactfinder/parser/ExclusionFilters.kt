@@ -10,4 +10,6 @@ private fun BUILD_CONFIG(classInfo: ParsedClassInfo) = classInfo.name == "BuildC
         classInfo.name == "R"
 private fun LOWERCASE(classInfo: ParsedClassInfo) = classInfo.name[0].isLowerCase()
 private fun COMPANION(classInfo: ParsedClassInfo) = classInfo.name.endsWith("Companion")
-val EXCLUSION_FILTERS = listOf<ExclusionFilter>(::BUILD_CONFIG, ::LOWERCASE, ::COMPANION)
+private fun DAGGER_COMPONENT(classInfo: ParsedClassInfo) = classInfo.name.startsWith("Dagger") &&
+        classInfo.name.endsWith("Component")
+val EXCLUSION_FILTERS = listOf<ExclusionFilter>(::BUILD_CONFIG, ::LOWERCASE, ::COMPANION, ::DAGGER_COMPONENT)
