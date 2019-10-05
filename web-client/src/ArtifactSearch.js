@@ -42,7 +42,7 @@ class ArtifactSearch extends Component {
         console.log("include classes:", this.includeClassesInput.checked,
         "include extension", this.includeExtensionMethodsInput.checked,
         "include global", this.includeGlobalMethodsInput.checked)
-        const response = await axios.get(`http://0.0.0.0:8080/searchArtifact`, {
+        const response = await axios.get(`/searchArtifact`, {
             params : {
                 query: this.search.value,
                 includeClasses : this.includeClassesInput.checked,
