@@ -39,6 +39,7 @@ internal object ClassZipEntryParser {
         node: ClassNode,
         into: ArtifactInfoBuilder
     ) {
+        val nodeInfo = node.toClassInfo()
         when (metadata) {
             is KotlinClassMetadata.Class -> {
                 val kmClass = metadata.toKmClass()
@@ -57,9 +58,9 @@ internal object ClassZipEntryParser {
                 kmPackage.functions.forEach {
                     if (it.isVisibleFromOutside()) {
                         if (it.isExtensionMethod()) {
-                            into.add(it.toExtensionFunction())
+                            into.add(it.toExtensionFunction(nodeInfo.pkg))
                         } else {
-                            into.add(it.toGlobalFunction())
+                            into.add(it.toGlobalFunction(nodeInfo.pkg))
                         }
                     }
                 }

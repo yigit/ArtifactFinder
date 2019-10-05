@@ -13,7 +13,9 @@ internal interface ArtifactDao {
 
     suspend fun insertClassLookup(classLookup: ClassLookup)
 
-    suspend fun search(query: String): List<SearchRecord>
+    suspend fun searchClasses(query: String): List<SearchRecord>
+
+    suspend fun searchMethods(query: String, methodSearchType: MethodSearchType): List<SearchRecord>
 
     suspend fun allLookups(): List<ClassLookup>
 
@@ -34,4 +36,32 @@ internal interface ArtifactDao {
     suspend fun deleteArtifact(artifact: Artifact)
 
     suspend fun deleteClassRecord(classRecord: ClassRecord)
+
+    suspend fun insertMethodRecord(methodRecord: MethodRecord): Long
+
+    suspend fun insertMethodLookup(methodLookup: MethodLookup)
+
+    enum class MethodSearchType {
+        ALL_METHOD,
+        ONLY_EXTENSIONS,
+        ONLY_GLOBAL;
+        companion object {
+            fun get(
+                includeGlobal:Boolean,
+                includeExtension:Boolean
+            ) : MethodSearchType? {
+                return if (includeGlobal) {
+                    if (includeExtension) {
+                        ALL_METHOD
+                    } else {
+                        ONLY_GLOBAL
+                    }
+                } else if (includeExtension) {
+                    ONLY_EXTENSIONS
+                } else {
+                    null
+                }
+            }
+        }
+    }
 }

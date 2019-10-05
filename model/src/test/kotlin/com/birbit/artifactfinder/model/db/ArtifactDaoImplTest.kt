@@ -139,10 +139,10 @@ class ArtifactDaoImplTest {
     private suspend fun allClassRecords() = db.query("SELECT * FROM ClassRecord") {
         it.asSequence().map {
             ClassRecord(
-                id = it.getLong(ArtifactDaoImpl.ID),
-                pkg = it.getString(ArtifactDaoImpl.PKG),
-                name = it.getString(ArtifactDaoImpl.NAME),
-                artifactId = it.getLong(ArtifactDaoImpl.ARTIFACT_ID)
+                id = it.requireLong(ArtifactDaoImpl.ID),
+                pkg = it.requireString(ArtifactDaoImpl.PKG),
+                name = it.requireString(ArtifactDaoImpl.NAME),
+                artifactId = it.requireLong(ArtifactDaoImpl.ARTIFACT_ID)
             )
         }.toList()
     }
@@ -223,7 +223,7 @@ class ArtifactDaoImplTest {
     fun checkVersion() = scope.runBlockingTest {
         assertThat(db.query("PRAGMA user_version") {
             it.nextRow()
-            it.getInt("user_version")
+            it.requireInt("user_version")
         }).isEqualTo(1)
     }
 

@@ -4,16 +4,14 @@ import com.birbit.artifactfinder.parser.EXCLUSION_FILTERS
 
 internal data class ArtifactInfoBuilder(
     private val classes: MutableSet<ParsedClassInfo> = mutableSetOf(),
-    private val globalMethods: MutableSet<ParsedGlobalMethodInfo> = mutableSetOf(),
-    private val extensionMethods: MutableSet<ParsedExtensionMethodInfo> = mutableSetOf(),
+    private val methods: MutableSet<ParsedMethodInfo> = mutableSetOf(),
     private val innerClasses: MutableSet<InnerClassInfo> = mutableSetOf()
 ) {
     fun build(): ParsedArtifactInfo {
         val allAvailableClasses = mergeEligibleInnerClasses(classes, innerClasses)
         return ParsedArtifactInfo(
             classes = allAvailableClasses,
-            globalMethods = globalMethods,
-            extensionMethods = extensionMethods
+            methods = methods
         )
     }
 
@@ -63,13 +61,8 @@ internal data class ArtifactInfoBuilder(
         return result
     }
 
-    fun add(func: ParsedExtensionMethodInfo): ArtifactInfoBuilder {
-        extensionMethods.add(func)
-        return this
-    }
-
-    fun add(func: ParsedGlobalMethodInfo): ArtifactInfoBuilder {
-        globalMethods.add(func)
+    fun add(func: ParsedMethodInfo): ArtifactInfoBuilder {
+        methods.add(func)
         return this
     }
 }

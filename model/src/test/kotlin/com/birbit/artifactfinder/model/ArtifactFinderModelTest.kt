@@ -1,11 +1,11 @@
 package com.birbit.artifactfinder.model
 
-import com.birbit.artifactfinder.model.db.ArtifactFinderDb
+import com.birbit.artifactfinder.model.SearchRecord.Type.*
 import com.birbit.artifactfinder.parser.vo.ParsedArtifactInfo
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
-import com.google.common.truth.Truth
+import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
@@ -16,9 +16,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class ArtifactFinderModelTest {
     private val scope = TestCoroutineScope()
-    private val model = ArtifactFinderModel(
-        ArtifactFinderDb(null)
-    )
+    private val model = ArtifactFinderModel(null)
 
     @Test
     fun simpleIndexRead() = scope.runBlockingTest {
@@ -27,7 +25,7 @@ class ArtifactFinderModelTest {
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION
         )
-        Truth.assertThat(addedPending).isTrue()
+        assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
                 id = 1,
@@ -38,13 +36,13 @@ class ArtifactFinderModelTest {
             info = INFO
         )
 
-        Truth.assertThat(model.search(CLASS_NAME))
+        assertThat(model.search(CLASS_NAME))
             .containsExactly(EXPECTED)
-        Truth.assertThat(model.search(CLASS_NAME.toLowerCase()))
+        assertThat(model.search(CLASS_NAME.toLowerCase()))
             .containsExactly(EXPECTED)
-        Truth.assertThat(model.search(CLASS_NAME.toUpperCase()))
+        assertThat(model.search(CLASS_NAME.toUpperCase()))
             .containsExactly(EXPECTED)
-        Truth.assertThat(model.search("NotRight"))
+        assertThat(model.search("NotRight"))
             .isEmpty()
 
         val addedPending3 = model.addPendingArtifact(
@@ -52,7 +50,7 @@ class ArtifactFinderModelTest {
             artifactId = ARTIFACT_ID_3,
             version = ARTIFACT_VERSION
         )
-        Truth.assertThat(addedPending3).isTrue()
+        assertThat(addedPending3).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
                 id = 2,
@@ -62,19 +60,19 @@ class ArtifactFinderModelTest {
             ),
             info = INFO_3
         )
-        Truth.assertThat(model.search(CLASS_NAME_3))
+        assertThat(model.search(CLASS_NAME_3))
             .containsExactly(EXPECTED_3)
 
     }
 
     @Test
-    fun nestedClassReadWrite() = runBlocking {
+    fun nestedClassReadWrite() = scope.runBlockingTest {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION
         )
-        Truth.assertThat(addedPending).isTrue()
+        assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
                 id = 1,
@@ -85,40 +83,40 @@ class ArtifactFinderModelTest {
             info = INFO_2
         )
 
-        Truth.assertThat(model.search(CLASS_NAME_2))
+        assertThat(model.search(CLASS_NAME_2))
             .containsExactly(EXPECTED_2)
-        Truth.assertThat(model.search(CLASS_NAME_2.toLowerCase()))
+        assertThat(model.search(CLASS_NAME_2.toLowerCase()))
             .containsExactly(EXPECTED_2)
-        Truth.assertThat(model.search(CLASS_NAME_2.toUpperCase()))
-            .containsExactly(EXPECTED_2)
-
-        Truth.assertThat(model.search(CLASS_NAME_2_INNER))
-            .containsExactly(EXPECTED_2)
-        Truth.assertThat(model.search(CLASS_NAME_2_INNER.toLowerCase()))
-            .containsExactly(EXPECTED_2)
-        Truth.assertThat(model.search(CLASS_NAME_2_INNER.toUpperCase()))
+        assertThat(model.search(CLASS_NAME_2.toUpperCase()))
             .containsExactly(EXPECTED_2)
 
-        Truth.assertThat(model.search(CLASS_NAME_2_OUTER))
+        assertThat(model.search(CLASS_NAME_2_INNER))
+            .containsExactly(EXPECTED_2)
+        assertThat(model.search(CLASS_NAME_2_INNER.toLowerCase()))
+            .containsExactly(EXPECTED_2)
+        assertThat(model.search(CLASS_NAME_2_INNER.toUpperCase()))
             .containsExactly(EXPECTED_2)
 
-        Truth.assertThat(model.search(CLASS_NAME_2.replace('$', '.')))
+        assertThat(model.search(CLASS_NAME_2_OUTER))
             .containsExactly(EXPECTED_2)
-        Truth.assertThat(model.search("NotRight"))
+
+        assertThat(model.search(CLASS_NAME_2.replace('$', '.')))
+            .containsExactly(EXPECTED_2)
+        assertThat(model.search("NotRight"))
             .isEmpty()
-        Truth.assertThat(model.search("NotRight"))
+        assertThat(model.search("NotRight"))
             .isEmpty()
     }
 
     @Test
-    fun addGetPending() = runBlocking {
-        Truth.assertThat(model.findNextPendingArtifact(emptyList())).isNull()
+    fun addGetPending() = scope.runBlockingTest {
+        assertThat(model.findNextPendingArtifact(emptyList())).isNull()
         val addResult = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION
         )
-        Truth.assertThat(addResult).isTrue()
+        assertThat(addResult).isTrue()
         val pending = PendingArtifact(
             id = 1,
             groupId = ARTIFACT_GROUP_ID,
@@ -127,18 +125,91 @@ class ArtifactFinderModelTest {
             retries = 0,
             fetched = false
         )
-        Truth.assertThat(model.findNextPendingArtifact(emptyList()))
+        assertThat(model.findNextPendingArtifact(emptyList()))
             .isEqualTo(pending)
-        Truth.assertThat(model.findNextPendingArtifact(listOf(pending.id)))
+        assertThat(model.findNextPendingArtifact(listOf(pending.id)))
             .isNull()
         model.incrementPendingArtifactRetry(pending)
-        Truth.assertThat(model.findNextPendingArtifact(emptyList()))
+        assertThat(model.findNextPendingArtifact(emptyList()))
             .isEqualTo(pending.copy(retries = 1))
         model.saveParsedArtifact(
             pendingArtifact = pending,
             info = ParsedArtifactInfo()
         )
-        Truth.assertThat(model.findNextPendingArtifact(emptyList())).isNull()
+        assertThat(model.findNextPendingArtifact(emptyList())).isNull()
+    }
+
+    @Test
+    fun methods() = scope.runBlockingTest {
+        val addedPending = model.addPendingArtifact(
+            groupId = ARTIFACT_GROUP_ID,
+            artifactId = ARTIFACT_ID,
+            version = ARTIFACT_VERSION
+        )
+        assertThat(addedPending).isTrue()
+        model.saveParsedArtifact(
+            pendingArtifact = PendingArtifact(
+                id = 1,
+                groupId = ARTIFACT_GROUP_ID,
+                artifactId = ARTIFACT_ID,
+                version = ARTIFACT_VERSION
+            ),
+            info = INFO_WITH_METHODS
+        )
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = EXTENSION_METHOD_NAME,
+                includeClasses = true,
+                includeExtensionMethods = true,
+                includeGlobalMethods = true
+            )
+        )).containsExactly(EXPECTED_EXTENSION_METHOD)
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = GLOBAL_METHOD_NAME,
+                includeClasses = false,
+                includeExtensionMethods = true,
+                includeGlobalMethods = true
+            )
+        )).containsExactly(EXPECTED_GLOBAL_METHOD)
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = "meth",
+                includeClasses = false,
+                includeExtensionMethods = true,
+                includeGlobalMethods = true
+            )
+        )).containsExactly(EXPECTED_GLOBAL_METHOD, EXPECTED_EXTENSION_METHOD)
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = "meth",
+                includeClasses = false,
+                includeExtensionMethods = false,
+                includeGlobalMethods = true
+            )
+        )).containsExactly(EXPECTED_GLOBAL_METHOD)
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = "meth",
+                includeClasses = false,
+                includeExtensionMethods = true,
+                includeGlobalMethods = false
+            )
+        )).containsExactly(EXPECTED_EXTENSION_METHOD)
+
+        assertThat(model.search(
+            ArtifactFinderModel.SearchParams(
+                query = "meth",
+                includeClasses = false,
+                includeExtensionMethods = false,
+                includeGlobalMethods = false
+            )
+        )).isEmpty()
     }
 
     companion object {
@@ -158,13 +229,20 @@ class ArtifactFinderModelTest {
         private const val CLASS_PKG_3 = "foo.bar.pkg3"
         private const val CLASS_NAME_3 = "Bap"
 
+        private const val EXTENSION_METHOD_PKG = "m.x"
+        private const val EXTENSION_METHOD_NAME = "methodExt"
+
+        private const val GLOBAL_METHOD_PKG = "g.x"
+        private const val GLOBAL_METHOD_NAME = "methodGlobal"
+
 
         private val EXPECTED = SearchRecord(
             pkg = CLASS_PKG,
             name = CLASS_NAME,
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            type = CLASS
         )
         private val INFO = ParsedArtifactInfo(
             classes = setOf(
@@ -173,8 +251,7 @@ class ArtifactFinderModelTest {
                     name = CLASS_NAME
                 )
             ),
-            globalMethods = emptySet(),
-            extensionMethods = emptySet()
+            methods = emptySet()
         )
 
         private val INFO_2 = ParsedArtifactInfo(
@@ -184,8 +261,7 @@ class ArtifactFinderModelTest {
                     name = CLASS_NAME_2
                 )
             ),
-            globalMethods = emptySet(),
-            extensionMethods = emptySet()
+            methods = emptySet()
         )
 
         private val EXPECTED_2 = SearchRecord(
@@ -193,7 +269,8 @@ class ArtifactFinderModelTest {
             name = CLASS_NAME_2,
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            type = CLASS
         )
 
         private val INFO_3 = ParsedArtifactInfo(
@@ -203,8 +280,7 @@ class ArtifactFinderModelTest {
                     name = CLASS_NAME_3
                 )
             ),
-            globalMethods = emptySet(),
-            extensionMethods = emptySet()
+            methods = emptySet()
         )
 
         private val EXPECTED_3 = SearchRecord(
@@ -212,6 +288,44 @@ class ArtifactFinderModelTest {
             name = CLASS_NAME_3,
             groupId = ARTIFACT_GROUP_ID_3,
             artifactId = ARTIFACT_ID_3,
+            version = ARTIFACT_VERSION,
+            type = CLASS
+        )
+
+        private val INFO_WITH_METHODS = ParsedArtifactInfo(
+            classes = emptySet(),
+            methods = setOf(
+                ParsedMethodInfo(
+                    pkg = EXTENSION_METHOD_PKG,
+                    name = EXTENSION_METHOD_NAME,
+                    receiver = ParsedClassInfo(
+                        pkg = CLASS_PKG,
+                        name = CLASS_NAME
+                    )
+                ),
+                ParsedMethodInfo(
+                    pkg = GLOBAL_METHOD_PKG,
+                    name = GLOBAL_METHOD_NAME,
+                    receiver = null
+                )
+            )
+        )
+
+        private val EXPECTED_EXTENSION_METHOD = SearchRecord(
+            pkg = EXTENSION_METHOD_PKG,
+            name = EXTENSION_METHOD_NAME,
+            type = EXTENSION_METHOD,
+            groupId = ARTIFACT_GROUP_ID,
+            artifactId = ARTIFACT_ID,
+            version = ARTIFACT_VERSION
+        )
+
+        private val EXPECTED_GLOBAL_METHOD = SearchRecord(
+            pkg = GLOBAL_METHOD_PKG,
+            name = GLOBAL_METHOD_NAME,
+            type = GLOBAL_METHOD,
+            groupId = ARTIFACT_GROUP_ID,
+            artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION
         )
     }

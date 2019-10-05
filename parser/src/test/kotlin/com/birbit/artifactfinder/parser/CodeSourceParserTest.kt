@@ -4,8 +4,7 @@ import com.birbit.artifactfinder.parser.testapk.ArtifactInfoSubject
 import com.birbit.artifactfinder.parser.testapk.SourceFile
 import com.birbit.artifactfinder.parser.testapk.TestApk
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
-import com.birbit.artifactfinder.parser.vo.ParsedExtensionMethodInfo
-import com.birbit.artifactfinder.parser.vo.ParsedGlobalMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -19,7 +18,7 @@ class CodeSourceParserTest {
     @JvmField
     val tmpFolder = TemporaryFolder()
 
-    val rebuild = false
+    private val rebuild = false
     @Test
     fun compilation() {
         @Suppress("ConstantConditionIf")
@@ -89,16 +88,21 @@ class CodeSourceParserTest {
             )
         ).hasExactGlobalMethods(
             listOf(
-                ParsedGlobalMethodInfo("globalMethod")
+                ParsedMethodInfo(
+                    receiver = null,
+                    name = "globalMethod",
+                    pkg = "com.test"
+                )
             )
         ).hasExactExtensionMethods(
             listOf(
-                ParsedExtensionMethodInfo(
+                ParsedMethodInfo(
                     receiver = ParsedClassInfo(
                         pkg = "kotlin",
                         name = "String"
                     ),
-                    name = "myMethod"
+                    name = "myMethod",
+                    pkg = "com.test"
                 )
             )
         )
@@ -112,15 +116,20 @@ class CodeSourceParserTest {
                 data class User(val age:Int)
                 class AnotherClass {
                     fun anotherClassMethod() = 3
+                    // this should not be included
+                    fun String.classExt() = 3
                     companion object {
                         private fun companionMethod() {
                         }
-                        // TODO should this be included? probably yes but companion is not :/
+                        // this should not be included
                         fun String.companionExt() = 3
                     }
                 }
                 fun String.myMethod(myArg:Int) : Long = 3L
                 fun globalMethod(someArg : String) : String = "foo"
+                internal fun String.internalMyMethod(myArg:Int) : Long = 3L
+                internal fun internalGlobalMethod(someArg : String) : String = "foo"
+                
                 internal fun internalFun():Unit {}
                 internal class InternalClass(val x : Int)
                 class kotlinLowercase()

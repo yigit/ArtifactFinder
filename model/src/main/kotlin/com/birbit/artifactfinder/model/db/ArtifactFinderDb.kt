@@ -1,6 +1,17 @@
 package com.birbit.artifactfinder.model.db
 
 import com.birbit.artifactfinder.model.*
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ARTIFACT
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ARTIFACT_ID
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ID
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.IDENTIFIER
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_ID
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_LOOKUP
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_RECORD
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.NAME
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.PKG
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.RECEIVER_NAME
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.RECEIVER_PKG
 import java.sql.DriverManager
 
 internal class ArtifactDaoImpl(
@@ -107,7 +118,7 @@ internal class ArtifactDaoImpl(
         }
     }
 
-    override suspend fun search(query: String): List<SearchRecord> {
+    override suspend fun searchClasses(query: String): List<SearchRecord> {
         return conn.read {
             prepareRead(
                 """
@@ -120,7 +131,34 @@ internal class ArtifactDaoImpl(
             ).also {
                 it.bindString(1, query)
             }.query { result ->
-                result.asSearchRecords()
+                result.asSearchRecords(SearchRecord.Type.CLASS)
+            }
+        }
+    }
+
+    override suspend fun searchMethods(
+        query: String,
+        methodSearchType: ArtifactDao.MethodSearchType
+    ): List<SearchRecord> {
+        val methodConstraint = when (methodSearchType) {
+            ArtifactDao.MethodSearchType.ALL_METHOD -> "1"
+            ArtifactDao.MethodSearchType.ONLY_EXTENSIONS -> "mr.$RECEIVER_NAME IS NOT NULL"
+            ArtifactDao.MethodSearchType.ONLY_GLOBAL -> "mr.$RECEIVER_NAME IS NULL"
+        }
+        return conn.read {
+            prepareRead(
+                """
+                SELECT mr.$NAME, mr.$PKG, mr.$RECEIVER_NAME, a.$ARTIFACT_ID, a.$GROUP_ID, a.$VERSION
+                    FROM $METHOD_LOOKUP ml, $ARTIFACT a, $METHOD_RECORD mr
+                    WHERE ml.$IDENTIFIER LIKE ? || '%'
+                        AND $methodConstraint
+                        AND ml.$METHOD_ID = mr.$ID
+                        AND mr.$ARTIFACT_ID = a.$ID
+                """.trimIndent()
+            ).also {
+                it.bindString(1, query)
+            }.query { result ->
+                result.asSearchRecords(null)
             }
         }
     }
@@ -226,37 +264,84 @@ internal class ArtifactDaoImpl(
         }
     }
 
+    override suspend fun insertMethodRecord(methodRecord: MethodRecord): Long {
+        return conn.write {
+            prepareWrite(
+                """
+                INSERT INTO $METHOD_RECORD ($ID, $PKG, $NAME, $RECEIVER_PKG, $RECEIVER_NAME, $ARTIFACT_ID)
+                VALUES (nullif(?, 0),?,?,?,?,?)
+            """.trimIndent()
+            ).also {
+                it.bindLong(1, methodRecord.id)
+                it.bindString(2, methodRecord.pkg)
+                it.bindString(3, methodRecord.name)
+                if (methodRecord.receivePkg != null) {
+                    it.bindString(4, methodRecord.receivePkg)
+                } else {
+                    it.bindNull(4)
+                }
+                if (methodRecord.receiveName != null) {
+                    it.bindString(5, methodRecord.receiveName)
+                } else {
+                    it.bindNull(5)
+                }
+                it.bindLong(6, methodRecord.artifactId)
+            }.execForLastRowId()
+        }
+    }
+
+    override suspend fun insertMethodLookup(methodLookup: MethodLookup) {
+        conn.write {
+            prepareWrite(
+                """
+                    INSERT OR REPLACE INTO $METHOD_LOOKUP
+                        (`$IDENTIFIER`,`$METHOD_ID`)
+                        VALUES (?,?)
+                """.trimIndent()
+            ).also { query ->
+                query.bindString(1, methodLookup.identifier)
+                query.bindLong(2, methodLookup.methodId)
+            }.exec()
+        }
+    }
+
     private fun QueryResult.asArtifact() = Artifact(
-        id = getLong(ID),
-        groupId = getString(GROUP_ID),
-        artifactId = getString(ARTIFACT_ID),
-        version = Version.fromString(getString(VERSION))!!
+        id = requireLong(ID),
+        groupId = requireString(GROUP_ID),
+        artifactId = requireString(ARTIFACT_ID),
+        version = Version.fromString(requireString(VERSION))!!
     )
 
-    private fun QueryResult.asSearchRecords() = asSequence().map {
+    private fun QueryResult.asSearchRecords(type: SearchRecord.Type?) = asSequence().map {
+        val decidedType = type ?: if (it.hasColumn(RECEIVER_NAME) && it.getString(RECEIVER_NAME) != null) {
+            SearchRecord.Type.EXTENSION_METHOD
+        } else {
+            SearchRecord.Type.GLOBAL_METHOD
+        }
         SearchRecord(
-            pkg = getString(PKG),
-            name = getString(NAME),
-            groupId = getString(GROUP_ID),
-            artifactId = getString(ARTIFACT_ID),
-            version = Version.fromString(getString(VERSION))!!
+            pkg = requireString(PKG),
+            name = requireString(NAME),
+            type = decidedType,
+            groupId = requireString(GROUP_ID),
+            artifactId = requireString(ARTIFACT_ID),
+            version = Version.fromString(requireString(VERSION))!!
         )
     }.toList()
 
     private fun QueryResult.asClassLookups() = asSequence().map {
         ClassLookup(
-            identifier = getString(IDENTIFIER),
-            classId = getLong(CLASS_ID)
+            identifier = requireString(IDENTIFIER),
+            classId = requireLong(CLASS_ID)
         )
     }.toList()
 
     private fun QueryResult.asPendingArtifact() = PendingArtifact(
-        id = getLong(ID),
-        groupId = getString(GROUP_ID),
-        artifactId = getString(ARTIFACT_ID),
-        version = Version.fromString(getString(VERSION))!!,
-        retries = getInt(RETRIES),
-        fetched = getBoolean(FETCHED)
+        id = requireLong(ID),
+        groupId = requireString(GROUP_ID),
+        artifactId = requireString(ARTIFACT_ID),
+        version = Version.fromString(requireString(VERSION))!!,
+        retries = requireInt(RETRIES),
+        fetched = requireBoolean(FETCHED)
     )
 
     companion object {
@@ -276,6 +361,11 @@ internal class ArtifactDaoImpl(
         internal const val CLASS_ID = "classId"
         internal const val RETRIES = "retries"
         internal const val FETCHED = "fetched"
+        internal const val METHOD_RECORD = "MethodRecord"
+        internal const val METHOD_ID = "methodId"
+        internal const val RECEIVER_PKG = "receiverPkg"
+        internal const val RECEIVER_NAME = "receiverName"
+        internal const val METHOD_LOOKUP = "MethodLookup"
     }
 }
 
@@ -317,11 +407,13 @@ class ArtifactFinderDb(
         suspend fun createAllTables(writableDbDriver: WritableDbDriver) {
             writableDbDriver.withTransaction {
                 val migrations = listOf(Migration_1())
-                val version = writableDbDriver.prepareRead("""
+                val version = writableDbDriver.prepareRead(
+                    """
                     PRAGMA user_version
-                """.trimIndent()).query {
-                    if(it.nextRow()) {
-                        it.getInt("user_version")
+                """.trimIndent()
+                ).query {
+                    if (it.nextRow()) {
+                        it.requireInt("user_version")
                     } else {
                         0
                     }
@@ -333,9 +425,11 @@ class ArtifactFinderDb(
                     selected.forEach {
                         it.apply(writableDbDriver)
                     }
-                    writableDbDriver.exec("""
+                    writableDbDriver.exec(
+                        """
                     PRAGMA user_version = ${selected.last().endVersion}
-                """.trimIndent())
+                """.trimIndent()
+                    )
                 }
             }
 
@@ -372,6 +466,27 @@ class ArtifactFinderDb(
                         `classId` INTEGER NOT NULL,
                         PRIMARY KEY(`identifier`, `classId`),
                         FOREIGN KEY(classId) REFERENCES ClassRecord(id) ON DELETE CASCADE ON UPDATE CASCADE
+                    ) WITHOUT ROWID
+                """.trimIndent()
+            )
+            writableDbDriver.exec(
+                """
+                    CREATE TABLE IF NOT EXISTS $METHOD_RECORD (
+                        $ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        $NAME TEXT NOT NULL,
+                        $PKG TEXT NOT NULL,
+                        $RECEIVER_PKG TEXT, -- nullable for global methods
+                        $RECEIVER_NAME TEXT, -- nullable for global methods
+                        $ARTIFACT_ID INTEGER NOT NULL REFERENCES $ARTIFACT($ID) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE
+                    )
+                """.trimIndent()
+            )
+            writableDbDriver.exec(
+                """
+                    CREATE TABLE IF NOT EXISTS $METHOD_LOOKUP (
+                        $IDENTIFIER TEXT NOT NULL,
+                        $METHOD_ID INTEGER NOT NULL REFERENCES $METHOD_RECORD($ID) ON DELETE CASCADE ON UPDATE CASCADE,
+                        PRIMARY KEY(`$IDENTIFIER`, `$METHOD_ID`)
                     ) WITHOUT ROWID
                 """.trimIndent()
             )

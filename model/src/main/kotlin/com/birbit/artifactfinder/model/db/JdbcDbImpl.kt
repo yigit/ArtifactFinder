@@ -8,13 +8,19 @@ import java.sql.Types
 internal class JdbcQueryResult(
     private val rs: ResultSet
 ) : QueryResult {
+    override val columnNames: Set<String> = (1..rs.metaData.columnCount).map {
+        rs.metaData.getColumnName(it)
+    }.toSet()
+
     override fun nextRow() = rs.next()
 
-    override fun getInt(columnName: String) = rs.getInt(columnName)
+    override fun requireInt(columnName: String) = rs.getInt(columnName)
 
-    override fun getLong(columnName: String): Long = rs.getLong(columnName)
+    override fun requireLong(columnName: String): Long = rs.getLong(columnName)
 
-    override fun getString(columnName: String) = rs.getString(columnName)
+    override fun requireString(columnName: String): String = rs.getString(columnName)
+
+    override fun getString(columnName: String): String? = rs.getString(columnName)
 
     override fun close() {
         rs.close()

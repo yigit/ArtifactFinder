@@ -2,10 +2,10 @@ package com.birbit.artifactfinder.parser.testapk
 
 import com.birbit.artifactfinder.parser.vo.ParsedArtifactInfo
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
-import com.birbit.artifactfinder.parser.vo.ParsedExtensionMethodInfo
-import com.birbit.artifactfinder.parser.vo.ParsedGlobalMethodInfo
+import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
+import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth
 
 class ArtifactInfoSubject(
@@ -22,28 +22,24 @@ class ArtifactInfoSubject(
         return this
     }
 
-    fun hasExactGlobalMethods(expected: Collection<ParsedGlobalMethodInfo>): ArtifactInfoSubject {
-        check("methods()").that(actual.globalMethods).isEqualTo(expected.toSet())
+    fun hasExactGlobalMethods(expected: Collection<ParsedMethodInfo>): ArtifactInfoSubject {
+        check("methods()").that(actual.methods.filter {
+            it.receiver == null
+        }.toSet()).isEqualTo(expected.toSet())
         return this
     }
 
-    fun hasExactExtensionMethods(expected: Collection<ParsedExtensionMethodInfo>): ArtifactInfoSubject {
-        check("extensionMethods()").that(actual.extensionMethods).isEqualTo(expected.toSet())
+    fun hasExactExtensionMethods(expected: Collection<ParsedMethodInfo>): ArtifactInfoSubject {
+        check("extensionMethods()").that(actual.methods.filter {
+            it.receiver != null
+        }.toSet()).isEqualTo(expected.toSet())
         return this
     }
 
     companion object {
         @JvmStatic
         fun artifactInfo(): Subject.Factory<ArtifactInfoSubject, ParsedArtifactInfo> {
-            return object : Subject.Factory<ArtifactInfoSubject, ParsedArtifactInfo> {
-                override fun createSubject(
-                    metadata: FailureMetadata?,
-                    actual: ParsedArtifactInfo
-                ): ArtifactInfoSubject {
-                    return ArtifactInfoSubject(metadata, actual)
-                }
-
-            }
+            return Factory { metadata, actual -> ArtifactInfoSubject(metadata, actual) }
         }
 
         fun assertThat(artifactInfo: ParsedArtifactInfo): ArtifactInfoSubject {

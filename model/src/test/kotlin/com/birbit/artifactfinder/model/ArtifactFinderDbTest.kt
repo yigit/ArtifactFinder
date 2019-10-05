@@ -10,8 +10,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
@@ -25,7 +23,7 @@ class ArtifactFinderDbTest {
         val db = ArtifactFinderDb(null)
         val result = db.query("SELECT 'a' LIKE 'A' AS result") {
             it.nextRow()
-            it.getInt("result")
+            it.requireInt("result")
         }
         Truth.assertThat(result).isEqualTo(0)
     }
@@ -35,7 +33,7 @@ class ArtifactFinderDbTest {
         val db = ArtifactFinderDb(tmpFolder.newFile().absoluteFile.absolutePath)
         val result = db.query("PRAGMA journal_mode") {
             it.nextRow()
-            it.getString("journal_mode").toLowerCase()
+            it.requireString("journal_mode").toLowerCase()
         }
         Truth.assertThat(result).isEqualTo("wal")
     }

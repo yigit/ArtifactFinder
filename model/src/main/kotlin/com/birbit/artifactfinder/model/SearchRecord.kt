@@ -3,6 +3,7 @@ package com.birbit.artifactfinder.model
 data class SearchRecord(
     val pkg: String,
     val name: String,
+    val type: Type,
     val groupId: String,
     val artifactId: String,
     val version: Version
@@ -16,4 +17,9 @@ data class SearchRecord(
         return -(version.compareTo(other.version))
     }
 
+    enum class Type {
+        CLASS,
+        GLOBAL_METHOD,
+        EXTENSION_METHOD
+    }
 }

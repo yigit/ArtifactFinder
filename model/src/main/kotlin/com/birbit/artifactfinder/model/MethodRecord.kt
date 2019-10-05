@@ -1,10 +1,10 @@
 package com.birbit.artifactfinder.model
 
-data class ClassRecord(
+data class MethodRecord(
     val id: Long,
-    // . separated
     val pkg: String,
-    // $ separated
     val name: String,
+    val receivePkg: String?,
+    val receiveName: String?,
     val artifactId: Long
 )

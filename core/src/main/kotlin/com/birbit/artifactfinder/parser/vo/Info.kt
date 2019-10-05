@@ -5,8 +5,7 @@ package com.birbit.artifactfinder.parser.vo
  */
 data class ParsedArtifactInfo(
     val classes: Set<ParsedClassInfo> = emptySet(),
-    val globalMethods: Set<ParsedGlobalMethodInfo> = emptySet(),
-    val extensionMethods: Set<ParsedExtensionMethodInfo> = emptySet()
+    val methods: Set<ParsedMethodInfo> = emptySet()
 )
 
 /**
@@ -24,17 +23,12 @@ data class ParsedClassInfo(
 )
 
 /**
- * Holds the data about a global kotlin method
+ * Holds the data about an extension methods in kotlin or global methods
  */
-data class ParsedGlobalMethodInfo(
-    val name: String
-)
-
-/**
- * Holds the data about an extension method in kotlin
- */
-data class ParsedExtensionMethodInfo(
-    val receiver: ParsedClassInfo,
+data class ParsedMethodInfo(
+    val pkg: String,
+    // null for global methods
+    val receiver: ParsedClassInfo?,
     val name: String
 )
 

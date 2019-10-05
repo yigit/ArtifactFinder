@@ -3,13 +3,16 @@ package com.birbit.artifactfinder.model.db
 import java.io.Closeable
 
 interface QueryResult : Closeable {
+    val columnNames: Set<String>
+    fun hasColumn(name: String) = columnNames.contains(name)
     fun nextRow(): Boolean
-    fun getInt(columnName: String): Int
-    fun getLong(columnName: String): Long
-    fun getString(columnName: String): String
-    fun getBoolean(columnName: String): Boolean = getInt(columnName) == 1
+    fun requireInt(columnName: String): Int
+    fun requireLong(columnName: String): Long
+    fun requireString(columnName: String): String
+    fun getString(columnName: String): String?
+    fun requireBoolean(columnName: String): Boolean = requireInt(columnName) == 1
     fun asSequence() = generateSequence {
-        if(nextRow()) {
+        if (nextRow()) {
             this@QueryResult
         } else {
             close()
@@ -25,7 +28,7 @@ interface Query {
     fun bindString(index: Int, value: String)
     fun bindNull(index: Int)
     fun bindBoolean(index: Int, value: Boolean) = bindInt(index, if (value) 1 else 0)
-    suspend fun <T> query(block : (QueryResult) -> T): T
+    suspend fun <T> query(block: (QueryResult) -> T): T
 }
 
 interface WriteQuery : Query {
@@ -35,11 +38,11 @@ interface WriteQuery : Query {
 }
 
 interface DbDriver {
-    fun prepareRead(sql:String) : Query
+    fun prepareRead(sql: String): Query
 }
 
 interface WritableDbDriver : DbDriver {
-    suspend fun exec(sql: String) =  prepareWrite(sql).exec()
-    fun prepareWrite(sql:String) : WriteQuery
-    suspend fun <T> withTransaction(block: suspend () ->T) : T
+    suspend fun exec(sql: String) = prepareWrite(sql).exec()
+    fun prepareWrite(sql: String): WriteQuery
+    suspend fun <T> withTransaction(block: suspend () -> T): T
 }
