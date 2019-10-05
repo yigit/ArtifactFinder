@@ -312,21 +312,30 @@ internal class ArtifactDaoImpl(
         version = Version.fromString(requireString(VERSION))!!
     )
 
-    private fun QueryResult.asSearchRecords(type: SearchRecord.Type?) = asSequence().map {
-        val decidedType = type ?: if (it.hasColumn(RECEIVER_NAME) && it.getString(RECEIVER_NAME) != null) {
-            SearchRecord.Type.EXTENSION_METHOD
-        } else {
-            SearchRecord.Type.GLOBAL_METHOD
-        }
-        SearchRecord(
-            pkg = requireString(PKG),
-            name = requireString(NAME),
-            type = decidedType,
-            groupId = requireString(GROUP_ID),
-            artifactId = requireString(ARTIFACT_ID),
-            version = Version.fromString(requireString(VERSION))!!
-        )
-    }.toList()
+    private fun QueryResult.asSearchRecords(type: SearchRecord.Type?): List<SearchRecord> {
+        val mightHaveReceiver = hasColumn(RECEIVER_NAME)
+        return asSequence().map {
+            val decidedType = type ?: if (mightHaveReceiver && it.getString(RECEIVER_NAME) != null) {
+                SearchRecord.Type.EXTENSION_METHOD
+            } else {
+                SearchRecord.Type.GLOBAL_METHOD
+            }
+            SearchRecord(
+                pkg = requireString(PKG),
+                name = requireString(NAME),
+                type = decidedType,
+                receiverName = if (mightHaveReceiver) {
+                    getString(RECEIVER_NAME)
+                } else {
+                    null
+                },
+                groupId = requireString(GROUP_ID),
+                artifactId = requireString(ARTIFACT_ID),
+                version = Version.fromString(requireString(VERSION))!!
+            )
+        }.toList()
+    }
+
 
     private fun QueryResult.asClassLookups() = asSequence().map {
         ClassLookup(

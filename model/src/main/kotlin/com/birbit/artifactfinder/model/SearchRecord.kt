@@ -4,6 +4,7 @@ data class SearchRecord(
     val pkg: String,
     val name: String,
     val type: Type,
+    val receiverName: String?,
     val groupId: String,
     val artifactId: String,
     val version: Version

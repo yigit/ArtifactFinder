@@ -242,7 +242,8 @@ class ArtifactFinderModelTest {
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION,
-            type = CLASS
+            type = CLASS,
+            receiverName = null
         )
         private val INFO = ParsedArtifactInfo(
             classes = setOf(
@@ -270,7 +271,8 @@ class ArtifactFinderModelTest {
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION,
-            type = CLASS
+            type = CLASS,
+            receiverName = null
         )
 
         private val INFO_3 = ParsedArtifactInfo(
@@ -289,7 +291,8 @@ class ArtifactFinderModelTest {
             groupId = ARTIFACT_GROUP_ID_3,
             artifactId = ARTIFACT_ID_3,
             version = ARTIFACT_VERSION,
-            type = CLASS
+            type = CLASS,
+            receiverName = null
         )
 
         private val INFO_WITH_METHODS = ParsedArtifactInfo(
@@ -317,7 +320,8 @@ class ArtifactFinderModelTest {
             type = EXTENSION_METHOD,
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            receiverName = CLASS_NAME
         )
 
         private val EXPECTED_GLOBAL_METHOD = SearchRecord(
@@ -326,7 +330,8 @@ class ArtifactFinderModelTest {
             type = GLOBAL_METHOD,
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            receiverName = null
         )
     }
 }
