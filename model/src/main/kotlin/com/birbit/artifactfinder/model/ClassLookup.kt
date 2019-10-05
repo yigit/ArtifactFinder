@@ -11,7 +11,6 @@ package com.birbit.artifactfinder.model
  * The identifier is indexed, which allows us to do a query on it with prefix-search
  */
 data class ClassLookup(
-    val rowId:Long,
     val identifier:String,
     val classId: Long
 )

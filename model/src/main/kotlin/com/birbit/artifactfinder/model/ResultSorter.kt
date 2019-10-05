@@ -4,11 +4,10 @@ import java.util.*
 
 object ResultSorter {
     fun sort(query: String, results: List<SearchRecord>): List<SearchRecord> {
-        val original = query
-        val lowercased = original.toLowerCase(Locale.US)
+        val lowercased = query.toLowerCase(Locale.US)
         results.forEach {
             it.score = score(
-                original = original,
+                original = query,
                 lowercased = lowercased,
                 record = it
             )

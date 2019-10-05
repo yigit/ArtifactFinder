@@ -96,7 +96,6 @@ class ArtifactFinderModel internal constructor(private val db: ArtifactFinderDb)
                     val identifier = pieces.takeLast(limit + 1).joinToString("$")
                     artifactDao.insertClassLookup(
                         ClassLookup(
-                            rowId = 0,
                             identifier = identifier,
                             classId = localClassId
                         )

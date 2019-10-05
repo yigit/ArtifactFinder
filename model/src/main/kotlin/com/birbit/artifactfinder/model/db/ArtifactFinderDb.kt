@@ -40,7 +40,9 @@ internal class ArtifactDaoImpl(
         return conn.write {
             this.prepareWrite(
                 """
-                INSERT OR REPLACE INTO `Artifact` (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`) VALUES (nullif(?, 0),?,?,?)
+                INSERT OR REPLACE INTO $ARTIFACT
+                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`)
+                    VALUES (nullif(?, 0),?,?,?)
             """.trimIndent()
             ).also {
                 it.bindLong(1, artifact.id)
@@ -55,7 +57,7 @@ internal class ArtifactDaoImpl(
         return conn.read {
             prepareRead(
                 """
-                SELECT * FROM Artifact
+                SELECT * FROM $ARTIFACT
                 WHERE $GROUP_ID = ? AND $ARTIFACT_ID = ? AND $VERSION = ?
                 LIMIT 1
             """.trimIndent()
@@ -77,7 +79,9 @@ internal class ArtifactDaoImpl(
         return conn.write {
             prepareWrite(
                 """
-                INSERT OR REPLACE INTO `ClassRecord` (`$ID`,`$PKG`,`$NAME`,`$ARTIFACT_ID`) VALUES (nullif(?, 0),?,?,?)
+                INSERT OR REPLACE INTO $CLASS_RECORD
+                    (`$ID`,`$PKG`,`$NAME`,`$ARTIFACT_ID`)
+                    VALUES (nullif(?, 0),?,?,?)
             """.trimIndent()
             ).also { query ->
                 query.bindLong(1, classRecord.id)
@@ -92,7 +96,9 @@ internal class ArtifactDaoImpl(
         conn.write {
             prepareWrite(
                 """
-                    INSERT OR REPLACE INTO `ClassLookup` (`$IDENTIFIER`,`$CLASS_ID`) VALUES (?,?)
+                    INSERT OR REPLACE INTO $CLASS_LOOKUP
+                        (`$IDENTIFIER`,`$CLASS_ID`)
+                        VALUES (?,?)
                 """.trimIndent()
             ).also { query ->
                 query.bindString(1, classLookup.identifier)
@@ -106,10 +112,10 @@ internal class ArtifactDaoImpl(
             prepareRead(
                 """
                 SELECT cr.$NAME, cr.$PKG, a.$ARTIFACT_ID, a.$GROUP_ID, a.$VERSION
-                    FROM ClassLookup cl, Artifact a, ClassRecord cr
-                    WHERE cl.identifier LIKE ? || '%'
-                        AND cl.classId = cr.id
-                        AND cr.artifactId = a.id
+                    FROM $CLASS_LOOKUP cl, $ARTIFACT a, $CLASS_RECORD cr
+                    WHERE cl.$IDENTIFIER LIKE ? || '%'
+                        AND cl.$CLASS_ID = cr.$ID
+                        AND cr.$ARTIFACT_ID = a.$ID
                 """.trimIndent()
             ).also {
                 it.bindString(1, query)
@@ -121,7 +127,7 @@ internal class ArtifactDaoImpl(
 
     override suspend fun allLookups(): List<ClassLookup> {
         return conn.read {
-            prepareRead("SELECT * FROM ClassLookup").query {
+            prepareRead("SELECT * FROM $CLASS_LOOKUP").query {
                 it.asClassLookups()
             }
         }
@@ -131,8 +137,9 @@ internal class ArtifactDaoImpl(
         conn.write {
             prepareWrite(
                 """
-                INSERT OR IGNORE INTO `PendingArtifact` (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`,`$RETRIES`,`$FETCHED`)
-                VALUES (nullif(?, 0),?,?,?,?,?)
+                INSERT OR IGNORE INTO $PENDING_ARTIFACT
+                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`,`$RETRIES`,`$FETCHED`)
+                    VALUES (nullif(?, 0),?,?,?,?,?)
             """.trimIndent()
             ).also {
                 it.bindLong(1, pendingArtifact.id)
@@ -149,7 +156,7 @@ internal class ArtifactDaoImpl(
         return conn.read {
             prepareRead(
                 """
-                SELECT * FROM PendingArtifact
+                SELECT * FROM $PENDING_ARTIFACT
                 WHERE $GROUP_ID = ? AND $ARTIFACT_ID = ? AND $VERSION = ?
                 LIMIT 1
                 """.trimIndent()
@@ -171,8 +178,8 @@ internal class ArtifactDaoImpl(
         conn.write {
             prepareWrite(
                 """
-                UPDATE PendingArtifact
-                SET retries = retries + 1
+                UPDATE $PENDING_ARTIFACT
+                SET $RETRIES = $RETRIES + 1
                 WHERE id = ?
             """.trimIndent()
             ).also {
@@ -185,7 +192,7 @@ internal class ArtifactDaoImpl(
         conn.write {
             prepareWrite(
                 """
-                UPDATE PendingArtifact
+                UPDATE $PENDING_ARTIFACT
                 SET fetched = 1
                 WHERE id = ?
             """.trimIndent()
@@ -204,8 +211,8 @@ internal class ArtifactDaoImpl(
         return conn.read {
             prepareRead(
                 """
-                SELECT * FROM PendingArtifact
-                WHERE fetched = 0 AND retries < 20 AND id NOT IN($idsParam)
+                SELECT * FROM $PENDING_ARTIFACT
+                WHERE $FETCHED = 0 AND $RETRIES < 20 AND $ID NOT IN($idsParam)
                 ORDER BY retries DESC
                 LIMIT 1
             """.trimIndent()
@@ -238,7 +245,6 @@ internal class ArtifactDaoImpl(
 
     private fun QueryResult.asClassLookups() = asSequence().map {
         ClassLookup(
-            rowId = 0,//TODO remove after cleaning room
             identifier = getString(IDENTIFIER),
             classId = getLong(CLASS_ID)
         )

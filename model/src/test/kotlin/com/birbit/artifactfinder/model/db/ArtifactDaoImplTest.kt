@@ -243,7 +243,6 @@ class ArtifactDaoImplTest {
             fetched = false
         )
         val CLASS_LOOKUP = ClassLookup(
-            rowId = 0,
             identifier = "foo.bar",
             classId = 10
         )
