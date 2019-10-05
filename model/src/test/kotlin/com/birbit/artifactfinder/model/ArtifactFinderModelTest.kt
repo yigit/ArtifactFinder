@@ -1,33 +1,32 @@
 package com.birbit.artifactfinder.model
 
+import com.birbit.artifactfinder.model.db.ArtifactFinderDb
 import com.birbit.artifactfinder.parser.vo.ParsedArtifactInfo
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
 import com.google.common.truth.Truth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.concurrent.Executors
 
+@ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class ArtifactFinderModelTest {
-
-    private val executor = Executors.newSingleThreadExecutor()
-    private val db = ArtifactFinderDatabase.create(
-        name = null,
-        readExecutor = executor,
-        writeExecutor = executor
-    )
+    private val scope = TestCoroutineScope()
     private val model = ArtifactFinderModel(
-        db
+        ArtifactFinderDb(null)
     )
 
     @Test
-    fun simpleIndexRead() = runBlocking<Unit> {
+    fun simpleIndexRead() = scope.runBlockingTest {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION)
+            version = ARTIFACT_VERSION
+        )
         Truth.assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
@@ -51,7 +50,8 @@ class ArtifactFinderModelTest {
         val addedPending3 = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID_3,
             artifactId = ARTIFACT_ID_3,
-            version = ARTIFACT_VERSION)
+            version = ARTIFACT_VERSION
+        )
         Truth.assertThat(addedPending3).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
@@ -68,11 +68,12 @@ class ArtifactFinderModelTest {
     }
 
     @Test
-    fun nestedClassReadWrite() = runBlocking<Unit> {
+    fun nestedClassReadWrite() = runBlocking {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION)
+            version = ARTIFACT_VERSION
+        )
         Truth.assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
             pendingArtifact = PendingArtifact(
@@ -110,7 +111,7 @@ class ArtifactFinderModelTest {
     }
 
     @Test
-    fun addGetPending() = runBlocking<Unit> {
+    fun addGetPending() = runBlocking {
         Truth.assertThat(model.findNextPendingArtifact(emptyList())).isNull()
         val addResult = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
@@ -141,21 +142,21 @@ class ArtifactFinderModelTest {
     }
 
     companion object {
-        private val ARTIFACT_GROUP_ID = "foo.bar"
-        private val ARTIFACT_ID = "baz"
-        private val ARTIFACT_GROUP_ID_3 = "foo.bak"
-        private val ARTIFACT_ID_3 = "ban"
+        private const val ARTIFACT_GROUP_ID = "foo.bar"
+        private const val ARTIFACT_ID = "baz"
+        private const val ARTIFACT_GROUP_ID_3 = "foo.bak"
+        private const val ARTIFACT_ID_3 = "ban"
         private val ARTIFACT_VERSION = Version(1, 1, 0, extra = null)
-        private val CLASS_PKG = "foo.bar.pkg1"
-        private val CLASS_NAME = "Bar"
+        private const val CLASS_PKG = "foo.bar.pkg1"
+        private const val CLASS_NAME = "Bar"
 
-        private val CLASS_PKG_2 = "foo.bar.pkg2"
-        private val CLASS_NAME_2_OUTER = "Foo"
-        private val CLASS_NAME_2_INNER = "Baz"
-        private val CLASS_NAME_2 = "${CLASS_NAME_2_OUTER}\$${CLASS_NAME_2_INNER}"
+        private const val CLASS_PKG_2 = "foo.bar.pkg2"
+        private const val CLASS_NAME_2_OUTER = "Foo"
+        private const val CLASS_NAME_2_INNER = "Baz"
+        private const val CLASS_NAME_2 = "${CLASS_NAME_2_OUTER}\$${CLASS_NAME_2_INNER}"
 
-        private val CLASS_PKG_3 = "foo.bar.pkg3"
-        private val CLASS_NAME_3 = "Bap"
+        private const val CLASS_PKG_3 = "foo.bar.pkg3"
+        private const val CLASS_NAME_3 = "Bap"
 
 
         private val EXPECTED = SearchRecord(

@@ -43,6 +43,7 @@ class ArtifactFinder(
             },
             workers = 5
         ) { pending ->
+            println("working on $pending")
             val artifactInfo = fetcher.fetchArtifact(
                 groupId = pending.groupId,
                 artifactId = pending.artifactId,

@@ -5,12 +5,11 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(path : ":core", configuration: "default")
     implementation libs.kotlinRuntime
     implementation libs.coroutines
-    implementation libs.roomJdbc
-    implementation libs.roomCommon
-    implementation project(path : ":core", configuration: "default")
-    kapt libs.roomCompiler
+    implementation libs.xerial
+    testImplementation libs.coroutinesTesting
     testImplementation libs.junit
     testImplementation libs.truth
     testImplementation libs.guava

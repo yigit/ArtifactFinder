@@ -1,9 +1,5 @@
 package com.birbit.artifactfinder.model
 
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
-
 /**
  * Represents the lookup information for a class.
  *
@@ -14,11 +10,7 @@ import androidx.room.PrimaryKey
  *
  * The identifier is indexed, which allows us to do a query on it with prefix-search
  */
-@Entity(
-    indices = [Index("identifier")]
-)
 data class ClassLookup(
-    @PrimaryKey(autoGenerate = true)
     val rowId:Long,
     val identifier:String,
     val classId: Long

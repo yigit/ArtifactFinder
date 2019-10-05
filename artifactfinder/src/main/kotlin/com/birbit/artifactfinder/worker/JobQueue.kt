@@ -75,6 +75,8 @@ suspend fun <T : Any, R> distributeJobs(
                     }
                 } catch (closed: ClosedReceiveChannelException) {
                     log("worker $workerId done")
+                } catch (th : Throwable) {
+                    log("worker has thrown exception ${th.message}")
                 }
             }
         }

@@ -1,6 +1,5 @@
 package com.birbit.artifactfinder.model
 
-import androidx.room.TypeConverter
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -32,17 +31,15 @@ data class Version(
         fun fromString(input: String): Version? {
             val matcher = VERSION_REGEX.matcher(input)
             if (!matcher.matches()) {
-                println("no match for $input")
                 return null
             }
-            val result = Version(
+
+            return Version(
                 major = matcher.group(1).toInt(),
                 minor = matcher.safeGet(2)?.toInt(),
                 patch = matcher.safeGet(3)?.toInt(),
                 extra = matcher.safeGet(4)
             )
-            println("parsed $input to $result")
-            return result
         }
 
         private fun Matcher.safeGet(index: Int): String? {
@@ -52,13 +49,5 @@ data class Version(
                 null
             }
         }
-    }
-
-    class RoomTypeConverter {
-        @TypeConverter
-        fun fromString(input: String) = Version.fromString(input)
-
-        @TypeConverter
-        fun convertToString(input: Version) = input.toString()
     }
 }

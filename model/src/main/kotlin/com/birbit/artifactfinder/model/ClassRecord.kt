@@ -1,11 +1,6 @@
 package com.birbit.artifactfinder.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity
-class ClassRecord(
-    @PrimaryKey(autoGenerate = true)
+data class ClassRecord(
     val id: Long,
     // . separated
     val pkg: String,

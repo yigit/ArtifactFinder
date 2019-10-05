@@ -44,23 +44,25 @@ private fun parseArgs(args: Array<out String>) : CmdlineArgs {
             "type must start with --, but $type does not"
         }
         val parsedType = type.substring(2).toLowerCase(Locale.US)
-        if (Params.ACTION.names.contains(parsedType)) {
-            check(action == null) {
-                "action is already set to $action"
+        when {
+            Params.ACTION.names.contains(parsedType) -> {
+                check(action == null) {
+                    "action is already set to $action"
+                }
+                action = Action.values().firstOrNull {
+                    it.names.contains(value.toLowerCase(Locale.US))
+                }
+                checkNotNull(action) {
+                    "invalid action $action"
+                }
             }
-            action = Action.values().firstOrNull {
-                it.names.contains(value.toLowerCase(Locale.US))
+            Params.DB.names.contains(parsedType) -> {
+                check(db == null) {
+                    "db is already set to ${db!!.canonicalPath}"
+                }
+                db = File(value)
             }
-            checkNotNull(action) {
-                "invalid action $action"
-            }
-        } else if (Params.DB.names.contains(parsedType)) {
-            check(db == null) {
-                "db is already set to ${db!!.canonicalPath}"
-            }
-            db = File(value)
-        } else {
-            throw IllegalArgumentException("invalid command $parsedType")
+            else -> throw IllegalArgumentException("invalid command $parsedType")
         }
     }
     checkNotNull(action) {
