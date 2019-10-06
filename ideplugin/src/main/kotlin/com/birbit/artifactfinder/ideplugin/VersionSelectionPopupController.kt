@@ -145,6 +145,10 @@ class VersionSelectionPopupController(
         private val choice: Choice,
         private val callback: (Choice) -> Unit
     ) : BaseListPopupStep<Module>("module", project.allModules()) {
+        override fun getDefaultOptionIndex(): Int {
+            return project.allModules().indexOf(currentModule)
+        }
+
         override fun hasSubstep(selectedValue: Module?): Boolean {
             return false
         }

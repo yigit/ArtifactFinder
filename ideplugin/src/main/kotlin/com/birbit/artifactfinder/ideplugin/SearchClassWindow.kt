@@ -11,6 +11,7 @@ import com.intellij.ui.SideBorder
 import com.intellij.ui.TableUtil
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import com.intellij.util.ui.UI
@@ -21,6 +22,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.GridLayout
 import java.awt.Point
 import java.io.IOException
 import javax.swing.*
@@ -54,7 +56,7 @@ class SearchArtifactPanelController(
 
         resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellRenderer =
             ButtonRenderer(icon = AllIcons.General.Add)
-        // TODO add to gradle can be part of the selection. so it is either copy or add and w/ annotation processor
+
         resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellEditor = VersionPopupRenderer(
             project = project,
             currentModule = module
@@ -104,6 +106,14 @@ class SearchArtifactPanelController(
 
         resultTable.putClientProperty(UIUtil.KEEP_BORDER_SIDES, SideBorder.ALL)
 
+        val bottomPanel = JPanel()
+        bottomPanel.layout = BoxLayout(bottomPanel, BoxLayout.Y_AXIS)
+        val helpButton = JButton("Help", AllIcons.Actions.Help)
+        helpButton.addActionListener {
+            // TODO "show help"
+        }
+        bottomPanel.add(helpButton)
+        helpButton.alignmentX = Component.RIGHT_ALIGNMENT
         val root = UI.PanelFactory.grid()
             .add(
                 UI.PanelFactory.panel(inputText.also {
@@ -115,13 +125,12 @@ class SearchArtifactPanelController(
                     .withComment("input a class name. e.g: RecyclerView")
             )
             .add(UI.PanelFactory.panel(JScrollPane(resultTable)))
-//            .add(UI.PanelFactory.panel(resultTable.tableHeader))
-//            .add(UI.PanelFactory.panel(resultTable))
-//            .add(UI.PanelFactory.panel(JButton("Help", AllIcons.Actions.Help)))
+
+            .add(UI.PanelFactory.panel(bottomPanel))
             .createPanel()
 
         popup = JBPopupFactory.getInstance()
-            .createComponentPopupBuilder(root, null)
+            .createComponentPopupBuilder(root, inputText)
             .also {
                 it.setFocusable(true)
                 it.setRequestFocus(true)
@@ -129,10 +138,15 @@ class SearchArtifactPanelController(
                 it.setTitle("Search Artifacts")
                 it.setCancelOnClickOutside(true)
                 it.setMovable(true)
+
                 it.setShowBorder(true)
                 it.addListener(object : JBPopupListener {
                     override fun onClosed(event: LightweightWindowEvent) {
                         scope.cancel()
+                    }
+
+                    override fun beforeShown(event: LightweightWindowEvent) {
+                        //inputText.requestFocusInWindow()
                     }
                 })
             }
