@@ -20,12 +20,13 @@ class SearchArtifactIntentionAction : PsiElementBaseIntentionAction() {
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
         val value = if (element is PsiWhiteSpace) {
-            PsiTreeUtil.skipSiblingsBackward(element, PsiWhiteSpace::class.java)?.text
+            PsiTreeUtil.skipSiblingsBackward(element, PsiWhiteSpace::class.java)
+                ?.text
         } else element.text
         SearchArtifactPanelController(
             project = project,
             module = ModuleUtil.findModuleForPsiElement(element),
-            initialText = value
+            initialText = value?.split(" ")?.lastOrNull()
         ).buildAndShow()
 
     }

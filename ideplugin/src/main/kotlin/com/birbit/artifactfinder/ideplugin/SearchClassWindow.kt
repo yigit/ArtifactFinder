@@ -3,25 +3,25 @@ package com.birbit.artifactfinder.ideplugin
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.FrameWrapper
+import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.ui.SideBorder
-import com.intellij.ui.components.JBPanel
-import com.intellij.ui.layout.panel
+import com.intellij.ui.TableUtil
+import com.intellij.ui.awt.RelativePoint
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.AbstractTableCellEditor
 import com.intellij.util.ui.UI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import org.mozilla.javascript.tools.debugger.Dim
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
+import java.awt.Point
 import java.io.IOException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -29,43 +29,37 @@ import javax.swing.event.DocumentListener
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellRenderer
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class SearchArtifactPanelController(
     private val project: Project,
     private val module: Module? = null,
     private val initialText: String? = null
 ) {
-    private val dependencyAdder = module?.let {
-        AutoDependencyUtil(module)
-    } ?: null
     private val job = SupervisorJob(null)
-    private val scope = CoroutineScope(job)
+    private val scope = CoroutineScope(Dispatchers.Main + job)
     private val model = SearchArtifactModel()
+    private lateinit var popup: JBPopup
+
 
     fun buildAndShow() {
-        val searchResultModel = SearchResultTableModel(dependencyAdder != null)
+        val searchResultModel = SearchResultTableModel()
         val resultTable = JBTable(searchResultModel).also {
             it.setMaxItemsForSizeCalculation(10)
             it.setShowColumns(true)
-            it.autoResizeMode = JBTable.AUTO_RESIZE_ALL_COLUMNS
+            it.autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
             it.fillsViewportHeight = true
         }
 
-        resultTable.getColumn(SearchResultTableModel.COL_COPY).cellRenderer = CopyButtonRenderer("copy to clipboard")
-        resultTable.getColumn(SearchResultTableModel.COL_COPY).cellEditor = CopyButtonEditor("Copied") { value ->
-            (value as? SearchResult)?.let {
-                val selection = StringSelection(it.qualifiedArtifact())
-                Toolkit.getDefaultToolkit().systemClipboard.setContents(selection, selection)
-            }
-        }
-        dependencyAdder?.let {
-            resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellRenderer =
-                CopyButtonRenderer("add dependency")
-            resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellEditor =
-                CopyButtonEditor("Added") { value ->
-                    (value as? SearchResult)?.let {
-                        dependencyAdder.addMavenDependency(it.qualifiedArtifact())
-                    }
-                }
+
+        resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellRenderer =
+            ButtonRenderer(icon = AllIcons.General.Add)
+        // TODO add to gradle can be part of the selection. so it is either copy or add and w/ annotation processor
+        resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellEditor = VersionPopupRenderer(
+            project = project,
+            currentModule = module
+        ) {
+            popup.cancel()
         }
 
         val inputChannel = Channel<String>(Channel.CONFLATED)
@@ -120,11 +114,13 @@ class SearchArtifactPanelController(
                     .withLabel("&Class Name:")
                     .withComment("input a class name. e.g: RecyclerView")
             )
-            .add(UI.PanelFactory.panel(resultTable))
+            .add(UI.PanelFactory.panel(JScrollPane(resultTable)))
+//            .add(UI.PanelFactory.panel(resultTable.tableHeader))
+//            .add(UI.PanelFactory.panel(resultTable))
 //            .add(UI.PanelFactory.panel(JButton("Help", AllIcons.Actions.Help)))
             .createPanel()
 
-        val popup = JBPopupFactory.getInstance()
+        popup = JBPopupFactory.getInstance()
             .createComponentPopupBuilder(root, null)
             .also {
                 it.setFocusable(true)
@@ -167,7 +163,7 @@ class SearchArtifactPanelController(
                         }
                         model.query(it)
                     } catch (ioError: IOException) {
-                        emptyList<SearchResult>()
+                        SearchResultModel.EMPTY
                     } finally {
                         withContext(Dispatchers.Main) {
                             resultTable.setPaintBusy(false)
@@ -175,69 +171,125 @@ class SearchArtifactPanelController(
                     }
                 }
                 .collect {
-                    searchResultModel.setItems(it)
+                    searchResultModel.setItems(it.items)
                     root.preferredSize = root.preferredSize
                     root.revalidate()
                     popup.setMinimumSize(root.preferredSize)
+                    resizeColumnWidth(resultTable)
                 }
         }
 
     }
 
-    companion object {
-        private val DIMENSION_KEY = "SearchArtifactWindow"
-
+    private fun resizeColumnWidth(table: JTable) {
+        val columnModel = table.columnModel
+        (0 until table.columnCount).forEach { column ->
+            val maxWidth = (0 until table.rowCount).map { row ->
+                val renderer = table.getCellRenderer(row, column)
+                val comp = table.prepareRenderer(renderer, row, column)
+                comp.preferredSize.width + 1
+            }.max() ?: 100
+            columnModel.getColumn(column).preferredWidth = maxWidth.coerceIn(5, 300)
+        }
     }
 }
 
-class SearchResultTableModel(
-    private val supportsAddDependency: Boolean
-) : DefaultTableModel(COLUMNS + if (supportsAddDependency) arrayOf(COL_ADD_DEPENDENCY) else emptyArray(), 0) {
+class SearchResultTableModel : DefaultTableModel(COLUMNS, 0) {
     override fun isCellEditable(row: Int, column: Int): Boolean {
-        return getColumnName(column) == COL_ADD_DEPENDENCY || getColumnName(column) == COL_COPY
-     }
+        return getColumnName(column) == COL_ADD_DEPENDENCY
+    }
 
-    fun setItems(items: List<SearchResult>) {
+    fun setItems(items: List<SearchResultModel.SearchResult>) {
         (rowCount - 1 downTo 0).forEach {
             removeRow(it)
         }
         items.forEach { item ->
             addRow(
                 arrayOf(
-                    item.name, item.artifactDesc, item.version, item, item
+                    item.desc, item.artifactDesc, item
                 )
             )
         }
     }
 
     companion object {
-        val COL_CLASS = "Class"
-        val COL_ARTIFACT = "Artifact"
-        val COL_VERSION = "Version"
-        val COL_COPY = "Copy to clipboard"
-        val COL_ADD_DEPENDENCY = "Add Dependency"
+        private const val COL_CLASS = "Class / Method"
+        private const val COL_ARTIFACT = "Artifact"
+        const val COL_ADD_DEPENDENCY = "Add Dependency"
 
-        val COLUMNS = arrayOf(COL_CLASS, COL_ARTIFACT, COL_VERSION, COL_COPY)
+        val COLUMNS = arrayOf(COL_CLASS, COL_ARTIFACT, COL_ADD_DEPENDENCY)
     }
 }
 
-private class CopyButtonEditor(val text: String,
-                               val action: (Any?) -> Unit) : DefaultCellEditor(JCheckBox(text)) {
+private class VersionPopupRenderer(
+    private val project: Project,
+    private val currentModule: Module?,
+    private val onSuccess: () -> Unit
+) : AbstractTableCellEditor() {
+    private var editedValue: SearchResultModel.SearchResult? = null
+    override fun getCellEditorValue(): Any {
+        return editedValue ?: "?"
+    }
+
     override fun getTableCellEditorComponent(
-        table: JTable?,
+        table: JTable,
         value: Any?,
         isSelected: Boolean,
         row: Int,
         column: Int
     ): Component {
-        return JButton(text).also {
-            action(value)
-        }
+        editedValue = (value as SearchResultModel.SearchResult)
+        showVersionSelection(
+            table = table,
+            row = row,
+            column = column,
+            result = editedValue!!,
+            project = project,
+            currentModule = currentModule,
+            onSelected = {
+                onSuccess()
+            }
+        )
+        return JBLabel(
+            "select"
+        )
     }
 
+    fun showVersionSelection(
+        table: JTable,
+        row: Int,
+        column: Int,
+        result: SearchResultModel.SearchResult,
+        project: Project,
+        currentModule: Module?,
+        onSelected: () -> Unit
+    ) {
+        val rect = table.getCellRect(row, column, true)
+        val point = Point(rect.x, rect.y)
+        VersionSelectionPopupController(
+            result = result,
+            project = project,
+            currentModule = currentModule,
+            callback = object : VersionSelectionPopupController.Callback {
+                override fun onChosen() {
+                    TableUtil.stopEditing(table)
+                    onSelected()
+                }
+
+                override fun onCancel() {
+                    TableUtil.stopEditing(table)
+                }
+
+            }
+        ).buildPopup()
+            .show(RelativePoint(table, point))
+    }
 }
 
-private class CopyButtonRenderer(val text: String) : TableCellRenderer {
+private class ButtonRenderer(
+    val text: String? = null,
+    val icon: Icon? = null
+) : TableCellRenderer {
     override fun getTableCellRendererComponent(
         table: JTable?,
         value: Any?,
@@ -246,7 +298,7 @@ private class CopyButtonRenderer(val text: String) : TableCellRenderer {
         row: Int,
         column: Int
     ): Component {
-        return JButton(text).apply {
+        return JButton(text ?: "", icon).apply {
             isOpaque = true
             isEnabled = true
         }
@@ -254,6 +306,7 @@ private class CopyButtonRenderer(val text: String) : TableCellRenderer {
 }
 
 
+@ExperimentalCoroutinesApi
 private fun <T> Flow<T>.merge(other: Flow<T>): Flow<T> {
     return channelFlow {
         val collectMe = launch {

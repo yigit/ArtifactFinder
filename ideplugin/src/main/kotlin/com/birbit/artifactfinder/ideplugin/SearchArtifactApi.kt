@@ -13,13 +13,17 @@ class SearchArtifactModel {
     private val api = SearchArtifactApi.build()
 
     suspend fun query(query: String) = withContext(Dispatchers.IO) {
-        api.queryResults(query)
+        SearchResultModel.fromSearchResultDTO(api.queryResults(query))
     }
 }
 
 private interface SearchArtifactApi {
     @GET("searchArtifact")
-    suspend fun queryResults(@Query("query") query: String): List<SearchResult>
+    suspend fun queryResults(
+        @Query("query") query: String,
+        @Query("includeExtensionMethods") includeExtensionMethods: Boolean = true,
+        @Query("includeGlobalMethods") includeGlobalMethods: Boolean = true
+    ): List<SearchResultDTO>
 
     companion object {
         fun build(): SearchArtifactApi {
@@ -27,7 +31,7 @@ private interface SearchArtifactApi {
 
             return Retrofit.Builder()
                 .baseUrl("https://birbit.com/")
-                .addConverterFactory(Json.asConverterFactory(contentType))
+                .addConverterFactory(Json.nonstrict.asConverterFactory(contentType))
                 .build().create(SearchArtifactApi::class.java)
         }
     }
