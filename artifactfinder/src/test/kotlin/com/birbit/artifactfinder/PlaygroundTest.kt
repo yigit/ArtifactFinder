@@ -2,7 +2,7 @@ package com.birbit.artifactfinder
 
 import com.birbit.artifactfinder.maven.MavenFetcher
 import com.birbit.artifactfinder.maven.vo.ArtifactType
-import com.birbit.artifactfinder.maven.vo.Artifactory
+import com.birbit.artifactfinder.vo.Artifactory
 import com.birbit.artifactfinder.model.ArtifactFinderModel
 import com.birbit.artifactfinder.parser.Aar
 import com.birbit.artifactfinder.parser.CodeSourceParser

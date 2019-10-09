@@ -1,10 +1,12 @@
 package com.birbit.artifactfinder.maven
 
 import com.birbit.artifactfinder.maven.vo.ArtifactMetadata
-import com.birbit.artifactfinder.maven.vo.Artifactory
+import com.birbit.artifactfinder.vo.Artifactory
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -16,7 +18,13 @@ internal interface MavenApi {
         internal const val GROUP_INDEX = "group-index.xml"
         internal const val MASTER_INDEX = "master-index.xml"
         private fun create(baseUrl: HttpUrl): MavenApi {
+            val client = OkHttpClient.Builder()
+                .addInterceptor(HttpLoggingInterceptor().also {
+                    it.level =  HttpLoggingInterceptor.Level.BASIC
+                })
+                .build()
             val builder = Retrofit.Builder()
+                .client(client)
                 .baseUrl(baseUrl)
                 .addConverterFactory(JacksonConverterFactory())
                 .callbackExecutor(Executors.newSingleThreadExecutor())

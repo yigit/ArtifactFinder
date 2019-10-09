@@ -1,4 +1,4 @@
-package com.birbit.artifactfinder.ideplugin
+package com.birbit.artifactfinder.dto
 
 import kotlinx.serialization.Serializable
 

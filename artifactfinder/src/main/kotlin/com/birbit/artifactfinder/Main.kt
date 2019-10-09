@@ -9,7 +9,8 @@ import java.util.Locale
 
 internal enum class Action(vararg val names:String) {
     TRAVERSE_GMAVEN("gmaven"),
-    DOWNLOAD_ARTIFACTS("download")
+    DOWNLOAD_ARTIFACTS("download"),
+    TRAVERSE_EXTERNAL("external")
 }
 
 internal enum class Params(vararg val names: String) {
@@ -89,9 +90,11 @@ suspend fun main(vararg args: String) {
         ensureSingleton()
         when(cmd.action) {
             Action.TRAVERSE_GMAVEN -> ArtifactFinder(cmd.db).indexGMaven()
+            Action.TRAVERSE_EXTERNAL -> ArtifactFinder(cmd.db).indexExternalArtifacts()
             Action.DOWNLOAD_ARTIFACTS -> ArtifactFinder(cmd.db).fetchArtifacts()
         }
     } catch (ex : Throwable) {
+        ex.printStackTrace()
         System.exit(1)
     }
     System.exit(0)

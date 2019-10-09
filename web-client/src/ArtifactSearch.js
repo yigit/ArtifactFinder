@@ -55,7 +55,7 @@ class ArtifactSearch extends Component {
         console.log(response.data);
         this.setState( {
             query: this.search.value,
-            searchResults: response.data
+            searchResults: response.data.results
         })
       
         

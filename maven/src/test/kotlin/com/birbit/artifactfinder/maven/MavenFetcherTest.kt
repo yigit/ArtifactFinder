@@ -1,7 +1,7 @@
 package com.birbit.artifactfinder.maven
 
 import com.birbit.artifactfinder.maven.vo.ArtifactMetadata
-import com.birbit.artifactfinder.maven.vo.Artifactory
+import com.birbit.artifactfinder.vo.Artifactory
 import com.birbit.artifactfinder.maven.vo.GroupIndex
 import com.birbit.artifactfinder.maven.vo.Versioning
 import com.google.common.truth.Truth.assertThat

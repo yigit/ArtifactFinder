@@ -3,7 +3,7 @@ package com.birbit.artifactfinder.maven
 import com.birbit.artifactfinder.maven.vo.Artifact
 import com.birbit.artifactfinder.maven.vo.ArtifactMetadata
 import com.birbit.artifactfinder.maven.vo.ArtifactType
-import com.birbit.artifactfinder.maven.vo.Artifactory
+import com.birbit.artifactfinder.vo.Artifactory
 import com.birbit.artifactfinder.maven.vo.GroupIndex
 import okhttp3.HttpUrl
 import retrofit2.HttpException

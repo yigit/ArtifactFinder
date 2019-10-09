@@ -1,9 +1,12 @@
 package com.birbit.artifactfinder.ideplugin
 
+import com.birbit.artifactfinder.dto.SearchResponseDTO
+
 /**
  * processes search results for UI representation
  */
 class SearchResultModel private constructor(
+    val latestVersion: Int,
     val items: List<SearchResult>
 ) {
 
@@ -12,17 +15,17 @@ class SearchResultModel private constructor(
         val artifactDesc: String,
         val groupId: String,
         val artifactId: String,
-        val versions : MutableList<String> = mutableListOf()
+        val versions: MutableList<String> = mutableListOf()
     ) {
-        fun qualifiedArtifact(version:String) = "$groupId:$artifactId:$version"
+        fun qualifiedArtifact(version: String) = "$groupId:$artifactId:$version"
     }
 
 
     companion object {
-        val EMPTY = SearchResultModel(emptyList())
-        fun fromSearchResultDTO(rawResults: List<SearchResultDTO>): SearchResultModel {
+        val EMPTY = SearchResultModel(0, emptyList())
+        fun fromSearchResponse(response: SearchResponseDTO): SearchResultModel {
             val items = LinkedHashMap<String, SearchResult>()
-            rawResults.forEach { rawResult ->
+            response.results.forEach { rawResult ->
                 val result = items.getOrPut(rawResult.nameDesc + " " + rawResult.artifactDesc) {
                     SearchResult(
                         desc = rawResult.nameDesc,
@@ -34,7 +37,8 @@ class SearchResultModel private constructor(
                 result.versions.add(rawResult.version)
             }
             return SearchResultModel(
-                items.values.toList()
+                latestVersion = response.latestVersion,
+                items = items.values.toList()
             )
         }
     }

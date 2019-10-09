@@ -2,6 +2,7 @@ package com.birbit.artifactfinder.model
 
 import com.birbit.artifactfinder.model.db.ArtifactFinderDb
 import com.birbit.artifactfinder.parser.vo.ParsedArtifactInfo
+import com.birbit.artifactfinder.vo.Artifactory
 import java.io.File
 import java.util.*
 
@@ -53,7 +54,8 @@ class ArtifactFinderModel internal constructor(private val db: ArtifactFinderDb)
     suspend fun addPendingArtifact(
         groupId: String,
         artifactId: String,
-        version: Version
+        version: Version,
+        artifactory: Artifactory
     ): Boolean {
         return db.withTransaction {
             val existing = db.artifactDao.findPendingArtifact(
@@ -71,7 +73,8 @@ class ArtifactFinderModel internal constructor(private val db: ArtifactFinderDb)
                         artifactId = artifactId,
                         version = version,
                         retries = 0,
-                        fetched = false
+                        fetched = false,
+                        artifactory = artifactory
                     )
                 )
                 true

@@ -27,6 +27,7 @@ class CodeSourceParserTest {
             TestApk(
                 // TODO test anonymous nested class
                 // TODO test nested of inner
+                // TODO test extension fields!
                 sources = listOf(
                     SRC_USER, SRC_INNER_CLASS, SRC_INVISIBLE_OUTER_CLASS,
                     SRC_KOTLIN_INNER_CLASS, SRC_KOTLIN_INVISIBLE_OUTER_CLASS,

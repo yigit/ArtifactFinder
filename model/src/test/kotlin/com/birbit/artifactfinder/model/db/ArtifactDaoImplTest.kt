@@ -1,6 +1,7 @@
 package com.birbit.artifactfinder.model.db
 
 import com.birbit.artifactfinder.model.*
+import com.birbit.artifactfinder.vo.Artifactory
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -224,7 +225,7 @@ class ArtifactDaoImplTest {
         assertThat(db.query("PRAGMA user_version") {
             it.nextRow()
             it.requireInt("user_version")
-        }).isEqualTo(1)
+        }).isEqualTo(2)
     }
 
     companion object {
@@ -232,7 +233,8 @@ class ArtifactDaoImplTest {
             id = 0,
             groupId = "foo",
             artifactId = "bar",
-            version = Version.fromString("2.2.0")!!
+            version = Version.fromString("2.2.0")!!,
+            artifactory = Artifactory.MAVEN
         )
         val PENDING = PendingArtifact(
             id = 0,
@@ -240,7 +242,8 @@ class ArtifactDaoImplTest {
             artifactId = ARTIFACT.artifactId,
             version = ARTIFACT.version,
             retries = 3,
-            fetched = false
+            fetched = false,
+            artifactory = Artifactory.MAVEN
         )
         val CLASS_LOOKUP = ClassLookup(
             identifier = "foo.bar",

@@ -48,9 +48,9 @@ internal open class JdbcQueryImpl(
     }
 
     override suspend fun <T> query(block: (QueryResult) -> T): T {
-        val rs = JdbcQueryResult(stmt.executeQuery())
-        return rs.use { result ->
-            block(result)
+        return stmt.use {
+            val rs = JdbcQueryResult(stmt.executeQuery())
+            rs.use(block)
         }
     }
 }
@@ -59,12 +59,18 @@ internal class JdbcWritableQueryImpl(
     stmt: PreparedStatement,
     private val conn: Connection
 ) : JdbcQueryImpl(stmt), WriteQuery {
-    override suspend fun exec() = stmt.execute()
+    override suspend fun exec() = stmt.use {
+        it.execute()
+    }
 
     override suspend fun <T> execForLastRowId(block: (Long) -> T): T {
-        stmt.execute()
-        return conn.prepareStatement("SELECT last_insert_rowid()").executeQuery().use {
-            block(it.getLong(1))
+        stmt.use {
+            stmt.execute()
+        }
+        return conn.prepareStatement("SELECT last_insert_rowid()").use {
+            it.executeQuery().use {
+                block(it.getLong(1))
+            }
         }
     }
 
@@ -82,6 +88,9 @@ internal class JdbcWriteableDbDriver(
     conn: Connection
 ) : JdbcDbDriver(conn), WritableDbDriver {
     override suspend fun <T> withTransaction(block: suspend () -> T): T {
+        if (conn.autoCommit == false) {
+            return block() // already in a transaction, just run it
+        }
         conn.autoCommit = false
         try {
             val result = block()

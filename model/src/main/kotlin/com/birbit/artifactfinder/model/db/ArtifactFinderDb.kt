@@ -2,6 +2,7 @@ package com.birbit.artifactfinder.model.db
 
 import com.birbit.artifactfinder.model.*
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ARTIFACT
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ARTIFACTORY_ID
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ARTIFACT_ID
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.ID
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.IDENTIFIER
@@ -9,9 +10,11 @@ import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_ID
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_LOOKUP
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.METHOD_RECORD
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.NAME
+import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.PENDING_ARTIFACT
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.PKG
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.RECEIVER_NAME
 import com.birbit.artifactfinder.model.db.ArtifactDaoImpl.Companion.RECEIVER_PKG
+import com.birbit.artifactfinder.vo.Artifactory
 import java.sql.DriverManager
 
 internal class ArtifactDaoImpl(
@@ -52,14 +55,15 @@ internal class ArtifactDaoImpl(
             this.prepareWrite(
                 """
                 INSERT OR REPLACE INTO $ARTIFACT
-                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`)
-                    VALUES (nullif(?, 0),?,?,?)
+                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`, `$ARTIFACTORY_ID`)
+                    VALUES (nullif(?, 0),?,?,?,?)
             """.trimIndent()
             ).also {
                 it.bindLong(1, artifact.id)
                 it.bindString(2, artifact.groupId)
                 it.bindString(3, artifact.artifactId)
                 it.bindString(4, artifact.version.toString())
+                it.bindInt(5, artifact.artifactory.id)
             }.execForLastRowId()
         }
     }
@@ -176,8 +180,8 @@ internal class ArtifactDaoImpl(
             prepareWrite(
                 """
                 INSERT OR IGNORE INTO $PENDING_ARTIFACT
-                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`,`$RETRIES`,`$FETCHED`)
-                    VALUES (nullif(?, 0),?,?,?,?,?)
+                    (`$ID`,`$GROUP_ID`,`$ARTIFACT_ID`,`$VERSION`,`$RETRIES`,`$FETCHED`, `$ARTIFACTORY_ID`)
+                    VALUES (nullif(?, 0),?,?,?,?,?, ?)
             """.trimIndent()
             ).also {
                 it.bindLong(1, pendingArtifact.id)
@@ -186,6 +190,7 @@ internal class ArtifactDaoImpl(
                 it.bindString(4, pendingArtifact.version.toString())
                 it.bindInt(5, pendingArtifact.retries)
                 it.bindBoolean(6, pendingArtifact.fetched)
+                it.bindInt(7, pendingArtifact.artifactory.id)
             }.exec()
         }
     }
@@ -309,7 +314,8 @@ internal class ArtifactDaoImpl(
         id = requireLong(ID),
         groupId = requireString(GROUP_ID),
         artifactId = requireString(ARTIFACT_ID),
-        version = Version.fromString(requireString(VERSION))!!
+        version = Version.fromString(requireString(VERSION))!!,
+        artifactory = Artifactory.getById(requireInt(ARTIFACTORY_ID))
     )
 
     private fun QueryResult.asSearchRecords(type: SearchRecord.Type?): List<SearchRecord> {
@@ -350,7 +356,8 @@ internal class ArtifactDaoImpl(
         artifactId = requireString(ARTIFACT_ID),
         version = Version.fromString(requireString(VERSION))!!,
         retries = requireInt(RETRIES),
-        fetched = requireBoolean(FETCHED)
+        fetched = requireBoolean(FETCHED),
+        artifactory = Artifactory.getById(requireInt(ARTIFACTORY_ID))
     )
 
     companion object {
@@ -362,6 +369,7 @@ internal class ArtifactDaoImpl(
         // column names
         internal const val ID = "id"
         internal const val ARTIFACT_ID = "artifactId"
+        internal const val ARTIFACTORY_ID = "artifactoryId"
         internal const val GROUP_ID = "groupId"
         internal const val VERSION = "version"
         internal const val PKG = "pkg"
@@ -415,7 +423,7 @@ class ArtifactFinderDb(
     companion object {
         suspend fun createAllTables(writableDbDriver: WritableDbDriver) {
             writableDbDriver.withTransaction {
-                val migrations = listOf(Migration_1())
+                val migrations = listOf(Migration_1(), Migration_2())
                 val version = writableDbDriver.prepareRead(
                     """
                     PRAGMA user_version
@@ -436,8 +444,8 @@ class ArtifactFinderDb(
                     }
                     writableDbDriver.exec(
                         """
-                    PRAGMA user_version = ${selected.last().endVersion}
-                """.trimIndent()
+                        PRAGMA user_version = ${selected.last().endVersion}
+                        """.trimIndent()
                     )
                 }
             }
@@ -536,6 +544,34 @@ class ArtifactFinderDb(
         }
 
         override val endVersion = 1
+    }
+
+    internal class Migration_2 : Migration {
+        override val endVersion = 2
+
+        override suspend fun apply(writableDbDriver: WritableDbDriver) {
+            writableDbDriver.exec(
+                """
+                ALTER TABLE $ARTIFACT ADD COLUMN $ARTIFACTORY_ID INTEGER DEFAULT ${Artifactory.GOOGLE.id}
+            """.trimIndent()
+            )
+            writableDbDriver.exec(
+                """
+                ALTER TABLE $PENDING_ARTIFACT ADD COLUMN $ARTIFACTORY_ID INTEGER DEFAULT ${Artifactory.GOOGLE.id}
+            """.trimIndent()
+            )
+            writableDbDriver.exec(
+                """
+                UPDATE $ARTIFACT SET $ARTIFACTORY_ID = ${Artifactory.GOOGLE.id}
+            """.trimIndent()
+            )
+            writableDbDriver.exec(
+                """
+                UPDATE $PENDING_ARTIFACT SET $ARTIFACTORY_ID = ${Artifactory.GOOGLE.id}
+            """.trimIndent()
+            )
+        }
+
     }
 
 }

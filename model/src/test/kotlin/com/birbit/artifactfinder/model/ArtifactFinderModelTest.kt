@@ -4,6 +4,7 @@ import com.birbit.artifactfinder.model.SearchRecord.Type.*
 import com.birbit.artifactfinder.parser.vo.ParsedArtifactInfo
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
 import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
+import com.birbit.artifactfinder.vo.Artifactory
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -23,7 +24,8 @@ class ArtifactFinderModelTest {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
@@ -31,7 +33,8 @@ class ArtifactFinderModelTest {
                 id = 1,
                 groupId = ARTIFACT_GROUP_ID,
                 artifactId = ARTIFACT_ID,
-                version = ARTIFACT_VERSION
+                version = ARTIFACT_VERSION,
+                artifactory = Artifactory.MAVEN
             ),
             info = INFO
         )
@@ -48,7 +51,8 @@ class ArtifactFinderModelTest {
         val addedPending3 = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID_3,
             artifactId = ARTIFACT_ID_3,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(addedPending3).isTrue()
         model.saveParsedArtifact(
@@ -56,7 +60,8 @@ class ArtifactFinderModelTest {
                 id = 2,
                 groupId = ARTIFACT_GROUP_ID_3,
                 artifactId = ARTIFACT_ID_3,
-                version = ARTIFACT_VERSION
+                version = ARTIFACT_VERSION,
+                artifactory = Artifactory.MAVEN
             ),
             info = INFO_3
         )
@@ -70,7 +75,8 @@ class ArtifactFinderModelTest {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
@@ -78,7 +84,8 @@ class ArtifactFinderModelTest {
                 id = 1,
                 groupId = ARTIFACT_GROUP_ID,
                 artifactId = ARTIFACT_ID,
-                version = ARTIFACT_VERSION
+                version = ARTIFACT_VERSION,
+                artifactory = Artifactory.MAVEN
             ),
             info = INFO_2
         )
@@ -114,7 +121,8 @@ class ArtifactFinderModelTest {
         val addResult = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(addResult).isTrue()
         val pending = PendingArtifact(
@@ -123,7 +131,8 @@ class ArtifactFinderModelTest {
             artifactId = ARTIFACT_ID,
             version = ARTIFACT_VERSION,
             retries = 0,
-            fetched = false
+            fetched = false,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(model.findNextPendingArtifact(emptyList()))
             .isEqualTo(pending)
@@ -144,7 +153,8 @@ class ArtifactFinderModelTest {
         val addedPending = model.addPendingArtifact(
             groupId = ARTIFACT_GROUP_ID,
             artifactId = ARTIFACT_ID,
-            version = ARTIFACT_VERSION
+            version = ARTIFACT_VERSION,
+            artifactory = Artifactory.MAVEN
         )
         assertThat(addedPending).isTrue()
         model.saveParsedArtifact(
@@ -152,7 +162,8 @@ class ArtifactFinderModelTest {
                 id = 1,
                 groupId = ARTIFACT_GROUP_ID,
                 artifactId = ARTIFACT_ID,
-                version = ARTIFACT_VERSION
+                version = ARTIFACT_VERSION,
+                artifactory = Artifactory.MAVEN
             ),
             info = INFO_WITH_METHODS
         )

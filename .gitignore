@@ -15,3 +15,7 @@
 .cxx
 buildSrc/build
 **/build
+**/bin
+.settings
+.project
+.classpath

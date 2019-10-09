@@ -144,10 +144,6 @@ class SearchArtifactPanelController(
                     override fun onClosed(event: LightweightWindowEvent) {
                         scope.cancel()
                     }
-
-                    override fun beforeShown(event: LightweightWindowEvent) {
-                        //inputText.requestFocusInWindow()
-                    }
                 })
             }
             .createPopup().apply {

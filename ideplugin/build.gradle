@@ -10,6 +10,7 @@ dependencies {
     implementation libs.retrofit
     implementation libs.kotlinSerialization
     implementation libs.retrofitKotlinSerialization
+    implementation project(":dto")
 }
 intellij {
     updateSinceUntilBuild false

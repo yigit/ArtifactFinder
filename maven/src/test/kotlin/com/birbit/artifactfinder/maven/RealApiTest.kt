@@ -1,10 +1,7 @@
 package com.birbit.artifactfinder.maven
 
-import com.birbit.artifactfinder.maven.vo.Artifactory
+import com.birbit.artifactfinder.vo.Artifactory
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
 //@RunWith(JUnit4::class)
 class RealApiTest {
