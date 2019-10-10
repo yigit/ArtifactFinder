@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.birbit.artifactfinder.ideplugin
 
 import com.intellij.icons.AllIcons
@@ -11,18 +27,12 @@ import com.intellij.ui.SideBorder
 import com.intellij.ui.TableUtil
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBPanel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import com.intellij.util.ui.UI
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.GridLayout
 import java.awt.Point
 import java.io.IOException
 import javax.swing.*
@@ -30,6 +40,10 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellRenderer
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -43,7 +57,6 @@ class SearchArtifactPanelController(
     private val model = SearchArtifactModel()
     private lateinit var popup: JBPopup
 
-
     fun buildAndShow() {
         val searchResultModel = SearchResultTableModel()
         val resultTable = JBTable(searchResultModel).also {
@@ -52,7 +65,6 @@ class SearchArtifactPanelController(
             it.autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
             it.fillsViewportHeight = true
         }
-
 
         resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellRenderer =
             ButtonRenderer(icon = AllIcons.General.Add)
@@ -100,9 +112,7 @@ class SearchArtifactPanelController(
             override fun removeUpdate(e: DocumentEvent?) {
                 maybeSearch(inputText.text)
             }
-
         })
-
 
         resultTable.putClientProperty(UIUtil.KEEP_BORDER_SIDES, SideBorder.ALL)
 
@@ -188,7 +198,6 @@ class SearchArtifactPanelController(
                     resizeColumnWidth(resultTable)
                 }
         }
-
     }
 
     private fun resizeColumnWidth(table: JTable) {
@@ -289,7 +298,6 @@ private class VersionPopupRenderer(
                 override fun onCancel() {
                     TableUtil.stopEditing(table)
                 }
-
             }
         ).buildPopup()
             .show(RelativePoint(table, point))
@@ -314,7 +322,6 @@ private class ButtonRenderer(
         }
     }
 }
-
 
 @ExperimentalCoroutinesApi
 private fun <T> Flow<T>.merge(other: Flow<T>): Flow<T> {

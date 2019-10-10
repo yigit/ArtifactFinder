@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google, Inc.
+ * Copyright $YEAR Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,3 @@
  * limitations under the License.
  */
 
-package com.birbit.artifactfinder.parser.testapk.templates
-
-fun androidManifest(
-    appPkg: String
-) = """
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="$appPkg">
-        <application
-            android:allowBackup="false"
-            android:label="foo"/>
-    </manifest>
-
-""".trimIndent()

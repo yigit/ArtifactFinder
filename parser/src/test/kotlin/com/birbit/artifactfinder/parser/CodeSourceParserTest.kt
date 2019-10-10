@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.birbit.artifactfinder.parser
 
 import com.birbit.artifactfinder.parser.testapk.ArtifactInfoSubject
@@ -5,12 +21,12 @@ import com.birbit.artifactfinder.parser.testapk.SourceFile
 import com.birbit.artifactfinder.parser.testapk.TestApk
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
 import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
+import java.io.File
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.io.File
 
 @RunWith(JUnit4::class)
 class CodeSourceParserTest {
@@ -36,7 +52,7 @@ class CodeSourceParserTest {
                 tmpFolder = outFolder
             ).buildAar().also {
                 val resourceAar = File("src/test/resources/lib-release.aar")
-                if(resourceAar.exists()) {
+                if (resourceAar.exists()) {
                     // copy into resources
                     outFolder.resolve("lib/build/outputs/aar/lib-release.aar").also {
                         check(it.exists())

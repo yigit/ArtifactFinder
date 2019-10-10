@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.birbit.artifactfinder.model
 
 import com.birbit.artifactfinder.model.SearchRecord.Type.*
@@ -19,7 +35,7 @@ class ArtifactFinderModelTest {
     private val scope = TestCoroutineScope()
     private val model = ArtifactFinderModel(null)
 
-    private suspend fun ArtifactFinderModel.search(query:String) = search(
+    private suspend fun ArtifactFinderModel.search(query: String) = search(
         ArtifactFinderModel.SearchParams(
             query = query,
             includeGlobalMethods = false,
@@ -75,7 +91,6 @@ class ArtifactFinderModelTest {
         )
         assertThat(model.search(CLASS_NAME_3))
             .containsExactly(EXPECTED_3)
-
     }
 
     @Test
@@ -243,7 +258,7 @@ class ArtifactFinderModelTest {
         private const val CLASS_PKG_2 = "foo.bar.pkg2"
         private const val CLASS_NAME_2_OUTER = "Foo"
         private const val CLASS_NAME_2_INNER = "Baz"
-        private const val CLASS_NAME_2 = "${CLASS_NAME_2_OUTER}\$${CLASS_NAME_2_INNER}"
+        private const val CLASS_NAME_2 = "${CLASS_NAME_2_OUTER}\$$CLASS_NAME_2_INNER"
 
         private const val CLASS_PKG_3 = "foo.bar.pkg3"
         private const val CLASS_NAME_3 = "Bap"
@@ -253,7 +268,6 @@ class ArtifactFinderModelTest {
 
         private const val GLOBAL_METHOD_PKG = "g.x"
         private const val GLOBAL_METHOD_NAME = "methodGlobal"
-
 
         private val EXPECTED = SearchRecord(
             pkg = CLASS_PKG,

@@ -1,6 +1,21 @@
+/*
+ * Copyright 2019 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.birbit.artifactfinder.ideplugin
 
-import com.intellij.icons.AllIcons
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
@@ -10,10 +25,9 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
-import com.intellij.util.messages.MessageBus
-import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 
 @Suppress("UNUSED_PARAMETER")
 class VersionSelectionPopupController(
@@ -44,7 +58,7 @@ class VersionSelectionPopupController(
         check(!choice.action.needsModule || choice.module != null) {
             "should either pick an action that does not require a module or pick a module"
         }
-        when(choice.action) {
+        when (choice.action) {
             Action.ADD_TO_GRADLE -> {
                 addToGradle(choice.version, choice.module!!, false)
             }
@@ -60,21 +74,21 @@ class VersionSelectionPopupController(
         }
     }
 
-    private fun addToGradle(version:String, module:Module, includeProcessor: Boolean) {
+    private fun addToGradle(version: String, module: Module, includeProcessor: Boolean) {
         val dependencyUtil = BuildDependencyHandler(module)
         val artifact = result.qualifiedArtifact(version)
         dependencyUtil.addMavenDependency(artifact)
         showNotification("Added $artifact to ${module.name}'s dependencies")
     }
 
-    private fun copyToClipboard(version:String, includeProcessor: Boolean) {
+    private fun copyToClipboard(version: String, includeProcessor: Boolean) {
         val artifact = result.qualifiedArtifact(version)
         val selection = StringSelection(artifact)
         Toolkit.getDefaultToolkit().systemClipboard.setContents(selection, selection)
         showNotification("Copied $artifact into clipboard")
     }
 
-    private fun showNotification(msg:String) {
+    private fun showNotification(msg: String) {
         Notifications.Bus.notify(
             Notification("artifact-finder", "Artifact Finder", msg, NotificationType.INFORMATION),
             project
