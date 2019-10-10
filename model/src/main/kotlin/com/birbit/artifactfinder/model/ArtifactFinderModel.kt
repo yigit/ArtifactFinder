@@ -16,19 +16,6 @@ class ArtifactFinderModel internal constructor(private val db: ArtifactFinderDb)
 
     private val artifactDao = db.artifactDao
 
-    @Deprecated("use search with SearchParams parameter")
-    @Suppress("unused")
-    suspend fun search(query: String): List<SearchRecord> {
-        return search(
-            SearchParams(
-                query = query,
-                includeGlobalMethods = false,
-                includeClasses = true,
-                includeExtensionMethods = false
-            )
-        )
-    }
-
     @Suppress("unused")
     suspend fun search(params: SearchParams): List<SearchRecord> {
         val senitizedQuery = params.query.trim().replace('.', '$').toLowerCase()

@@ -19,6 +19,14 @@ class ArtifactFinderModelTest {
     private val scope = TestCoroutineScope()
     private val model = ArtifactFinderModel(null)
 
+    private suspend fun ArtifactFinderModel.search(query:String) = search(
+        ArtifactFinderModel.SearchParams(
+            query = query,
+            includeGlobalMethods = false,
+            includeExtensionMethods = false,
+            includeClasses = true
+        )
+    )
     @Test
     fun simpleIndexRead() = scope.runBlockingTest {
         val addedPending = model.addPendingArtifact(

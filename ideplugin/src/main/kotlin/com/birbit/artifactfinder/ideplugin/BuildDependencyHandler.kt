@@ -18,10 +18,10 @@ class BuildDependencyHandler(private val module: Module) {
         module.getModuleSystem().registerDependency(
             GradleCoordinate.parseCoordinateString(coordinate)
         )
-        sync(module.project)
+        sync()
     }
 
-    private fun sync(project: Project) {
+    private fun sync() {
         DataManager.getInstance().dataContextFromFocusAsync.onSuccess {
             val am = ActionManager.getInstance();
             val syncAction = am.getAction("Android.SyncProject")

@@ -42,7 +42,7 @@ class ConnectionProviderTest {
 
     @Test
     fun parallelReads_moreThanCapacity() = testScope.runBlockingTest {
-        val results = (1..4).map { cnt ->
+        val results = (1..4).map {
             async {
                 provider.read {
                     delay(100)

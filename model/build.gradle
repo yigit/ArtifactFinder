@@ -33,10 +33,18 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    kotlinOptions {
+        // YOLO
+        freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
+    }
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    kotlinOptions {
+        // YOLO
+        freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
     }
 }
 PublishUtil.enablePublishing(project, "model")

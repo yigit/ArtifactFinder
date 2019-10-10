@@ -6,7 +6,6 @@ import com.birbit.artifactfinder.model.ArtifactFinderModel
 import io.ktor.application.ApplicationCall
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import kotlinx.serialization.UnstableDefault
@@ -29,6 +28,7 @@ class ArtifactFinderRequestHandler(
     private suspend fun ApplicationCall.handleRequest() {
         val query = parameters["query"]
         val limit = (parameters["limit"]?.toIntOrNull() ?: 20).coerceAtMost(50)
+        @Suppress("UNUSED_VARIABLE") // one day
         val version = parameters["version"]?.toIntOrNull() ?: 1
         val includeClasses = parameters["includeClasses"].parseBoolean(true)
         val includeExtensionMethods = parameters["includeExtensionMethods"].parseBoolean(false)

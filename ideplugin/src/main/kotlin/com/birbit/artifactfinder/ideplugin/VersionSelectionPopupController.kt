@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
+@Suppress("UNUSED_PARAMETER")
 class VersionSelectionPopupController(
     private val result: SearchResultModel.SearchResult,
     private val project: Project,

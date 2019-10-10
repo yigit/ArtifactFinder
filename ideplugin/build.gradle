@@ -31,8 +31,14 @@ patchPluginXml {
 targetCompatibility = "1.8"
 sourceCompatibility = "1.8"
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    kotlinOptions {
+        // YOLO
+        freeCompilerArgs += "-Xuse-experimental=kotlinx.serialization.UnstableDefault"
+        freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.FlowPreview"
+        freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
     }
 }
