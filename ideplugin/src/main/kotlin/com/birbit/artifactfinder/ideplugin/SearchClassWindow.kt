@@ -17,8 +17,10 @@
 package com.birbit.artifactfinder.ideplugin
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
@@ -27,23 +29,24 @@ import com.intellij.ui.SideBorder
 import com.intellij.ui.TableUtil
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import com.intellij.util.ui.UI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Point
-import java.io.IOException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellRenderer
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import com.intellij.openapi.diagnostic.Logger
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -55,6 +58,7 @@ class SearchArtifactPanelController(
     private val job = SupervisorJob(null)
     private val scope = CoroutineScope(Dispatchers.Main + job)
     private val model = SearchArtifactModel()
+    private val logger = Logger.getInstance("artifact-finder")
     private lateinit var popup: JBPopup
 
     fun buildAndShow() {
@@ -76,8 +80,8 @@ class SearchArtifactPanelController(
             popup.cancel()
         }
 
-        val inputChannel = Channel<String>(Channel.CONFLATED)
-        val directInputChannel = Channel<String>(Channel.CONFLATED)
+        val inputChannel = ConflatedBroadcastChannel<String>()
+        val directInputChannel = ConflatedBroadcastChannel<String>()
 
         fun doSearch(text: String) {
             scope.launch {
@@ -91,7 +95,11 @@ class SearchArtifactPanelController(
             }
         }
 
-        val inputText = JTextField(initialText)
+        val inputText = JBTextField(initialText)
+        inputText.emptyText.text = "input a class name. e.g: RecyclerView"
+        val errorText = JBLabel(
+            "", AllIcons.General.Error,JBLabel.LEADING)
+        errorText.isVisible = false
         initialText?.let {
             doSearch(it)
         }
@@ -120,25 +128,32 @@ class SearchArtifactPanelController(
         bottomPanel.layout = BoxLayout(bottomPanel, BoxLayout.Y_AXIS)
         val helpButton = JButton("Help", AllIcons.Actions.Help)
         helpButton.addActionListener {
-            // TODO "show help"
+            JBPopupFactory.getInstance()
+                .createHtmlTextBalloonBuilder(
+                    """
+                        Artifact Finder allows you to find maven artifacy via class names and global or extension names.
+                        You can find the source code <a href="https://github.com/yigit/artifactFinder">here</a>.
+                        If you want a certain artifact to be indexed, just edit <b>TBD</b> file in this link and
+                        send a pull request.
+                    """.trimIndent(),
+                    MessageType.INFO
+                ) { linkEvent ->
+                    BrowserUtil.browse(linkEvent.url)
+                }.createBalloon().showInCenterOf(helpButton as JComponent)
         }
         bottomPanel.add(helpButton)
         helpButton.alignmentX = Component.RIGHT_ALIGNMENT
         val root = UI.PanelFactory.grid()
             .add(
-                UI.PanelFactory.panel(inputText.also {
-                    it.addActionListener { actionEvent ->
-                        println("action:$actionEvent")
-                    }
-                })
+                UI.PanelFactory.panel(inputText)
                     .withLabel("&Class Name:")
-                    .withComment("input a class name. e.g: RecyclerView")
+            )
+            .add(
+                UI.PanelFactory.panel(errorText)
             )
             .add(UI.PanelFactory.panel(JScrollPane(resultTable)))
-
             .add(UI.PanelFactory.panel(bottomPanel))
             .createPanel()
-
         popup = JBPopupFactory.getInstance()
             .createComponentPopupBuilder(root, inputText)
             .also {
@@ -163,7 +178,7 @@ class SearchArtifactPanelController(
         popup.setMinimumSize(Dimension(800, 600))
         scope.launch {
             inputChannel
-                .consumeAsFlow()
+                .asFlow()
                 .onEach {
                     delay(300)
                 }.map {
@@ -174,7 +189,7 @@ class SearchArtifactPanelController(
                 }
                 .filter {
                     it.length > 2
-                }.merge(directInputChannel.consumeAsFlow())
+                }.merge(directInputChannel.asFlow())
                 .distinctUntilChanged()
                 .mapLatest {
                     try {
@@ -182,15 +197,27 @@ class SearchArtifactPanelController(
                             resultTable.setPaintBusy(true)
                         }
                         model.query(it)
-                    } catch (ioError: IOException) {
-                        SearchResultModel.EMPTY
                     } finally {
                         withContext(Dispatchers.Main) {
                             resultTable.setPaintBusy(false)
                         }
                     }
                 }
+                .retryWhen { cause, attempt ->
+                    logger.error("Error while getting artifact search results", cause)
+                    val msg = "${cause.javaClass.simpleName}: ${cause.localizedMessage ?: ""}"
+                    kotlinx.coroutines.withContext(Dispatchers.Main) {
+                        errorText.text = msg
+                        errorText.isVisible = true
+                    }
+                    // linear backoff
+                    val delayTime = (attempt + 1) * 1_000
+                    delay(delayTime.coerceAtMost(60_000))
+                    true
+                }
+                .flowOn(Dispatchers.Main)
                 .collect {
+                    errorText.isVisible = false
                     searchResultModel.setItems(it.items)
                     root.preferredSize = root.preferredSize
                     root.revalidate()
