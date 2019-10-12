@@ -40,6 +40,11 @@
         </group>
     </actions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.unresolvedReferenceQuickFixProvider
+                implementation="com.birbit.artifactfinder.ideplugin.JavaQuickFixContributor"/>
+    </extensions>
+
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <quickFixContributor implementation="com.birbit.artifactfinder.ideplugin.KotlinImportResolver"/>
     </extensions>
