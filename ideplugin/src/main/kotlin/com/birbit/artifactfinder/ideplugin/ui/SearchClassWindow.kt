@@ -28,10 +28,10 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UI
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.*
 import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
+import kotlinx.coroutines.*
 
 @FlowPreview
 @ExperimentalCoroutinesApi

@@ -25,15 +25,15 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 
 class SearchWindowController(
     private val scope: CoroutineScope,
