@@ -45,6 +45,10 @@ patchPluginXml {
       Initial version of Artifact Finder"""
 }
 
+publishPlugin {
+    token intellijPublishToken
+}
+
 targetCompatibility = "1.8"
 sourceCompatibility = "1.8"
 
