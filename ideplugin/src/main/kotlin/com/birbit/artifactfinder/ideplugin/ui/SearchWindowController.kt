@@ -160,8 +160,9 @@ class SearchWindowController(
                             names.
                             </p>
                             <p>
-                            You can find the source code <a href="https://github.com/yigit/artifactFinder">here</a>.
-                            If you want a certain artifact to be indexed, just edit <b>TBD</b> file in this link and
+                            You can find the source code <a href="$REPOSITORY_URL">here</a>.
+                            If you want a certain artifact to be indexed, just edit
+                            <a href="$EXTERNAL_RESOURCES_FILE_URL">External Resources</a> file in this link and
                             send a pull request.
                             </p>
                         """.trimIndent(),
@@ -169,6 +170,12 @@ class SearchWindowController(
             ) { linkEvent ->
                 BrowserUtil.browse(linkEvent.url)
             }.createBalloon().showInCenterOf(helpButton as JComponent)
+    }
+
+    companion object {
+        private const val REPOSITORY_URL = "https://github.com/yigit/ArtifactFinder"
+        private const val EXTERNAL_RESOURCES_FILE_URL = "$REPOSITORY_URL/blob/master" +
+                "/artifactfinder/src/main/kotlin/com/birbit/artifactfinder/ExternalSources.kt"
     }
 }
 
