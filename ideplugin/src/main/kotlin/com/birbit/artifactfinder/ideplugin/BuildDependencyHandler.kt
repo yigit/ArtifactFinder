@@ -26,11 +26,19 @@ import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.module.Module
 
 class BuildDependencyHandler(private val module: Module) {
-    fun addMavenDependency(coordinate: String) {
-        module.getModuleSystem().registerDependency(
-            GradleCoordinate.parseCoordinateString(coordinate)
-        )
-        sync()
+    fun addMavenDependency(coordinate: String, onSuccess: () -> Unit, onError: () -> Unit) {
+        val parsedCoordinate = GradleCoordinate.parseCoordinateString(coordinate)
+
+        module.getModuleSystem().registerDependency(parsedCoordinate)
+
+        // There is no callback from Gradle about the fact that a dependency was registered, so we should check that
+        val resolvedDependency = module.getModuleSystem().getResolvedDependency(parsedCoordinate)
+        if (resolvedDependency != null) {
+            sync()
+            onSuccess.invoke()
+        } else {
+            onError.invoke()
+        }
     }
 
     private fun sync() {
