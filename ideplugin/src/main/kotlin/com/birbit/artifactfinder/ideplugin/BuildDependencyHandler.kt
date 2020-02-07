@@ -35,7 +35,7 @@ class BuildDependencyHandler(private val module: Module) {
         val resolvedDependency = module.getModuleSystem().getResolvedDependency(parsedCoordinate)
         if (resolvedDependency != null) {
             sync()
-            onSuccess.invoke()
+            onSuccess()
         } else {
             onError.invoke()
         }
