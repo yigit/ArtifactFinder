@@ -37,7 +37,7 @@ class BuildDependencyHandler(private val module: Module) {
             sync()
             onSuccess()
         } else {
-            onError.invoke()
+            onError()
         }
     }
 
