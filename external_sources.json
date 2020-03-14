@@ -1,0 +1,45 @@
+{
+  "__INFO__" : "This file contains the list of non gmaven artifacts to index",
+  "version": 1,
+  "groups": [
+    {
+      "groupId": "com.github.bumptech.glide",
+      "artifactIds": [
+        "glide"
+      ],
+      "artifactory": "MAVEN"
+    },
+    {
+      "groupId": "com.google.dagger",
+      "artifactIds": [
+        "dagger"
+      ],
+      "artifactory": "MAVEN"
+    },
+    {
+      "groupId": "com.squareup.retrofit2",
+      "artifactIds": [
+        "adapter-guava",
+        "adapter-java8",
+        "adapter-rxjava",
+        "adapter-rxjava2",
+        "adapter-scala",
+        "converter-gson",
+        "converter-guava",
+        "converter-jackson",
+        "converter-java8",
+        "converter-jaxb",
+        "converter-moshi",
+        "converter-protobuf",
+        "converter-scalars",
+        "converter-simplexml",
+        "converter-wire",
+        "retrofit",
+        "retrofit-adapters",
+        "retrofit-converters",
+        "retrofit-mock"
+      ],
+      "artifactory": "MAVEN"
+    }
+  ]
+}

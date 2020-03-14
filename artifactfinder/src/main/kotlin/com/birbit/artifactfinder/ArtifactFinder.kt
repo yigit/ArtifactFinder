@@ -16,6 +16,7 @@
 
 package com.birbit.artifactfinder
 
+import com.birbit.artifactfinder.external.ExternalSourceSpec
 import com.birbit.artifactfinder.maven.MavenFetcher
 import com.birbit.artifactfinder.maven.vo.ArtifactType
 import com.birbit.artifactfinder.model.ArtifactFinderModel
@@ -30,6 +31,9 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
 
 class ArtifactFinder(
     private val db: File
@@ -41,12 +45,30 @@ class ArtifactFinder(
     private val fetchers = Artifactory.values().map {
         MavenFetcher(it)
     }
+
     private val Artifactory.fetcher
         get() = fetchers[this.ordinal]
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun indexExternalArtifacts() {
-        indexGroupSources(EXTERNAL_SOURCES.groups)
-        indexArtifactSources(EXTERNAL_SOURCES.artifacts)
+        val client = OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().also {
+                    it.level = HttpLoggingInterceptor.Level.BASIC
+                }
+            )
+            .build()
+        val response = client.newCall(
+            Request.Builder()
+                .url(EXTERNAL_SOURCES_URL)
+                .build()
+        ).execute()
+        response.body?.byteStream()?.use {
+            val source = ExternalSourceSpec.parse(it)
+            if (source.version == ExternalSourceSpec.LATEST_VERSION) {
+                indexArtifactSources(source.asArtifactSources())
+            }
+        }
     }
 
     suspend fun indexGMaven() = withContext(Dispatchers.IO) {
@@ -94,9 +116,11 @@ class ArtifactFinder(
                 groupId = artifactSource.groupId,
                 artifactId = artifactSource.artifactId
             )
-            val selected = VersionSelector.selectVersions(metadata.versioning.versions.mapNotNull {
-                Version.fromString(it)
-            })
+            val selected = VersionSelector.selectVersions(
+                metadata.versioning.versions.mapNotNull {
+                    Version.fromString(it)
+                }
+            )
             println("selected $selected")
             selected.forEach {
                 println("adding pending $it")
@@ -149,5 +173,9 @@ class ArtifactFinder(
             )
         }
         model.sync()
+    }
+
+    companion object {
+        private val EXTERNAL_SOURCES_URL = "https://raw.githubusercontent.com/yigit/ArtifactFinder/master/artifactfinder/external_sources.json"
     }
 }
