@@ -25,9 +25,9 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
+import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 
 @Suppress("UNUSED_PARAMETER")
 class VersionSelectionPopupController(
@@ -77,8 +77,13 @@ class VersionSelectionPopupController(
     private fun addToGradle(version: String, module: Module, includeProcessor: Boolean) {
         val dependencyUtil = BuildDependencyHandler(module)
         val artifact = result.qualifiedArtifact(version)
-        dependencyUtil.addMavenDependency(artifact)
-        showNotification("Added $artifact to ${module.name}'s dependencies")
+        dependencyUtil.addMavenDependency(artifact,
+            onSuccess = {
+                showNotification("Added $artifact to ${module.name}'s dependencies")
+            },
+            onError = {
+                showError("Unable to add $artifact to ${module.name}'s dependencies")
+            })
     }
 
     private fun copyToClipboard(version: String, includeProcessor: Boolean) {
@@ -91,6 +96,13 @@ class VersionSelectionPopupController(
     private fun showNotification(msg: String) {
         Notifications.Bus.notify(
             Notification("artifact-finder", "Artifact Finder", msg, NotificationType.INFORMATION),
+            project
+        )
+    }
+
+    private fun showError(msg: String) {
+        Notifications.Bus.notify(
+            Notification("artifact-finder", "Artifact Finder", msg, NotificationType.ERROR),
             project
         )
     }
