@@ -40,6 +40,25 @@
         "retrofit-mock"
       ],
       "artifactory": "MAVEN"
+    },
+    {
+      "groupId": "org.jetbrains.kotlinx",
+      "artifactIds": [
+        "kotlinx-coroutines-core",
+        "kotlinx-coroutines-android"
+      ]
+    },
+    {
+      "groupId": "com.jakewharton.timber",
+      "artifactIds": [
+        "timber"
+      ]
+    },
+    {
+      "groupId": "com.dropbox.mobile.store",
+      "artifactIds": [
+        "store4"
+      ]
     }
   ]
 }
