@@ -31,6 +31,10 @@ jobs:
       # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
         restore-keys: |
           ${{ runner.os }}-gradle-
+    - uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
     # Runs a single command using the runners shell
     - name: build and test
       run: ./gradlew spotlessCheck test
