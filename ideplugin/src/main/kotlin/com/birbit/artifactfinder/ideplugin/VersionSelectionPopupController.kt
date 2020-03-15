@@ -25,9 +25,9 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
-import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 
 @Suppress("UNUSED_PARAMETER")
 class VersionSelectionPopupController(
