@@ -19,6 +19,7 @@ package com.birbit.artifactfinder.external
 import com.birbit.artifactfinder.ArtifactSource
 import com.birbit.artifactfinder.vo.Artifactory
 import java.io.InputStream
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -26,8 +27,10 @@ import kotlinx.serialization.json.JsonConfiguration
 @Serializable
 data class ExternalSourceSpec(
     // include a spec version so that we can change it w/o making the crawler throw errors
+    @SerialName("version")
     val version: Int = LATEST_VERSION,
     // list of packages to crawl
+    @SerialName("groups")
     val groups: List<ExternalGroupSpec> = emptyList()
 ) {
     fun asArtifactSources() = groups.flatMap { pkg ->
@@ -67,8 +70,11 @@ data class ExternalSourceSpec(
  */
 @Serializable
 data class ExternalGroupSpec(
+    @SerialName("groupId")
     val groupId: String,
+    @SerialName("artifactIds")
     val artifactIds: List<String> = emptyList(),
+    @SerialName("artifactory")
     val artifactory: Artifactory = Artifactory.MAVEN
 ) {
     init {

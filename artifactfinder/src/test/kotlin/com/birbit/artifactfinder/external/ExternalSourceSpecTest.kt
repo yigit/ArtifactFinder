@@ -38,10 +38,10 @@ class ExternalSourceSpecTest {
     fun test_oneArtifact() {
         assertThat(
             """{
-            "packages" : [
+            "groups" : [
                 {
-                    "pkg" : "foo.bar",
-                    "artifacts" : ["baz"]
+                    "groupId" : "foo.bar",
+                    "artifactIds" : ["baz"]
                 }
             ]
             }""".trimMargin().parse()
@@ -63,10 +63,10 @@ class ExternalSourceSpecTest {
         assertThat(
             """{
             "ignore_unknown" : true,
-            "packages" : [
+            "groups" : [
                 {
-                    "pkg" : "foo.bar",
-                    "artifacts" : ["baz"]
+                    "groupId" : "foo.bar",
+                    "artifactIds" : ["baz"]
                 }
             ]
             }""".trimMargin().parse()
@@ -87,9 +87,9 @@ class ExternalSourceSpecTest {
     fun test_emptyArtifact() {
         val result = runCatching {
             """{
-            "packages" : [
+            "groups" : [
                 {
-                    "pkg" : "foo.bar"
+                    "groupId" : "foo.bar"
                 }
             ]
             }""".trimMargin().parse()
