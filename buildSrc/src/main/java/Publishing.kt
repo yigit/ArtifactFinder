@@ -46,7 +46,7 @@ object PublishUtil {
         ext.publications.create("maven", MavenPublication::class.java) {
             it.artifactId = artifactId
             it.groupId = "com.birbit.artifactfinder"
-            it.version = "0.1"
+            it.version = "0.2"
             it.from(project.components.findByName("kotlin"))
             it.artifact(sourceTask.get())
         }
