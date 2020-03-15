@@ -77,12 +77,13 @@ class VersionSelectionPopupController(
     private fun addToGradle(version: String, module: Module, includeProcessor: Boolean) {
         val dependencyUtil = BuildDependencyHandler(module)
         val artifact = result.qualifiedArtifact(version)
-        dependencyUtil.addMavenDependency(artifact,
+        dependencyUtil.addMavenDependency(
+            coordinate = artifact,
             onSuccess = {
-                showNotification("Added $artifact to ${module.name}'s dependencies")
+                showNotification("Added $artifact to ${module.name}'s dependencies.")
             },
-            onError = {
-                showError("Unable to add $artifact to ${module.name}'s dependencies")
+            onError = { msg ->
+                showError("Unable to add $artifact to ${module.name}'s dependencies. $msg")
             })
     }
 
