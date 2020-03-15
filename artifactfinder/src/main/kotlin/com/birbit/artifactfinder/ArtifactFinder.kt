@@ -27,13 +27,13 @@ import com.birbit.artifactfinder.parser.Jar
 import com.birbit.artifactfinder.vo.Artifactory
 import com.birbit.artifactfinder.vo.Artifactory.GOOGLE
 import com.birbit.artifactfinder.worker.distributeJobs
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
-import java.io.File
 
 class ArtifactFinder(
     private val db: File
