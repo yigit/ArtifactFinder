@@ -32,7 +32,8 @@ private val unwantedFlags = arrayOf(
     Flag.IS_LOCAL,
     Flag.IS_PRIVATE_TO_THIS,
     Flag.IS_PROTECTED,
-    Flag.IS_LOCAL
+    Flag.IS_LOCAL,
+    Flag.IS_PRIVATE
 )
 
 private fun Flags.isVisibleFromOutsideFlags() = unwantedFlags.none {
@@ -43,7 +44,9 @@ internal fun KmType.toClassInfo() = this.classifier.let {
     when (it) {
         is KmClassifier.Class -> it.name.toClassInfo()
         is KmClassifier.TypeAlias -> it.name.toClassInfo()
-        is KmClassifier.TypeParameter -> throw IllegalArgumentException("$this cannot become a class info")
+        is KmClassifier.TypeParameter -> {
+            throw IllegalArgumentException("$this cannot become a class info")
+        }
     }
 }
 

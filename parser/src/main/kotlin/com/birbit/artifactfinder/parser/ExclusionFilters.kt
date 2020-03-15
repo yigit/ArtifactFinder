@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
+@file:Suppress("FunctionName")
+
 package com.birbit.artifactfinder.parser
 
 import com.birbit.artifactfinder.parser.vo.ParsedClassInfo
+import com.birbit.artifactfinder.parser.vo.ParsedMethodInfo
 
 // exclude filters for class names
 
 typealias ExclusionFilter = (ParsedClassInfo) -> Boolean
+
+typealias MethodExclusionFilter = (ParsedMethodInfo) -> Boolean
 
 private fun BUILD_CONFIG(classInfo: ParsedClassInfo) = classInfo.name == "BuildConfig" ||
         classInfo.name == "R"
@@ -28,4 +33,15 @@ private fun LOWERCASE(classInfo: ParsedClassInfo) = classInfo.name[0].isLowerCas
 private fun COMPANION(classInfo: ParsedClassInfo) = classInfo.name.endsWith("Companion")
 private fun DAGGER_COMPONENT(classInfo: ParsedClassInfo) = classInfo.name.startsWith("Dagger") &&
         classInfo.name.endsWith("Component")
-val EXCLUSION_FILTERS = listOf<ExclusionFilter>(::BUILD_CONFIG, ::LOWERCASE, ::COMPANION, ::DAGGER_COMPONENT)
+private fun DEFAULT_IMPL(classInfo: ParsedClassInfo) = classInfo.name.endsWith("DefaultImpls")
+private fun INTERNAL_PKG(classInfo: ParsedClassInfo) = classInfo.pkg.contains("internal")
+
+private fun INTERNAL_METHOD_PKG(methodInfo: ParsedMethodInfo) = methodInfo.pkg.contains("internal")
+
+val EXCLUSION_FILTERS = listOf<ExclusionFilter>(
+    ::BUILD_CONFIG, ::LOWERCASE, ::COMPANION, ::DAGGER_COMPONENT, ::DEFAULT_IMPL, ::INTERNAL_PKG
+)
+
+val METHOD_EXCLUSION_FILTERS = listOf<MethodExclusionFilter>(
+    ::INTERNAL_METHOD_PKG
+)

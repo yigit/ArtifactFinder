@@ -49,6 +49,6 @@ internal fun ClassNode.isInnerClass() = this.innerClasses?.any {
 internal fun ClassNode.toClassInfo() = name.toClassInfo()
 
 internal fun ClassNode.toInnerClassInfo() = InnerClassInfo(
-    parent = innerClasses.first().outerName.toClassInfo(),
+    parent = innerClasses.first { it.name == this.name }.outerName.toClassInfo(),
     classInfo = toClassInfo()
 )

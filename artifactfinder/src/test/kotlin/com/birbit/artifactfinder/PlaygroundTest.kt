@@ -45,12 +45,12 @@ class PlaygroundTest {
     fun playground() = runBlocking<Unit> {
         if (true) return@runBlocking
         val fetcher = MavenFetcher(
-            artifactory = Artifactory.GOOGLE
+            artifactory = Artifactory.MAVEN
         )
         val artifactInfo = fetcher.fetchArtifact(
-            groupId = "androidx.fragment",
-            artifactId = "fragment-ktx",
-            version = "1.2.0-alpha04"
+            groupId = "org.jetbrains.kotlinx",
+            artifactId = "kotlinx-coroutines-core",
+            version = "1.3.4"
         )
         val codeSource = when (artifactInfo.type) {
             ArtifactType.AAR -> Aar(artifactInfo.inputStream)

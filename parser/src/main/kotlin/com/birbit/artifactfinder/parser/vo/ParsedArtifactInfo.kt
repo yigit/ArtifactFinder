@@ -17,6 +17,7 @@
 package com.birbit.artifactfinder.parser.vo
 
 import com.birbit.artifactfinder.parser.EXCLUSION_FILTERS
+import com.birbit.artifactfinder.parser.METHOD_EXCLUSION_FILTERS
 
 internal data class ArtifactInfoBuilder(
     private val classes: MutableSet<ParsedClassInfo> = mutableSetOf(),
@@ -78,7 +79,9 @@ internal data class ArtifactInfoBuilder(
     }
 
     fun add(func: ParsedMethodInfo): ArtifactInfoBuilder {
-        methods.add(func)
+        if (METHOD_EXCLUSION_FILTERS.none { it(func) }) {
+            methods.add(func)
+        }
         return this
     }
 }
