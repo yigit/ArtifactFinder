@@ -27,13 +27,13 @@ import com.birbit.artifactfinder.parser.Jar
 import com.birbit.artifactfinder.vo.Artifactory
 import com.birbit.artifactfinder.vo.Artifactory.GOOGLE
 import com.birbit.artifactfinder.worker.distributeJobs
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
+import java.io.File
 
 class ArtifactFinder(
     private val db: File
@@ -51,6 +51,12 @@ class ArtifactFinder(
 
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun indexExternalArtifacts() {
+        fetchExternalResources()?.let {
+            indexArtifactSources(it)
+        }
+    }
+
+    fun fetchExternalResources(): List<ArtifactSource>? {
         val client = OkHttpClient.Builder()
             .addInterceptor(
                 HttpLoggingInterceptor().also {
@@ -63,10 +69,12 @@ class ArtifactFinder(
                 .url(EXTERNAL_SOURCES_URL)
                 .build()
         ).execute()
-        response.body?.byteStream()?.use {
+        return response.body?.byteStream()?.use {
             val source = ExternalSourceSpec.parse(it)
             if (source.version == ExternalSourceSpec.LATEST_VERSION) {
-                indexArtifactSources(source.asArtifactSources())
+                source.asArtifactSources()
+            } else {
+                null
             }
         }
     }
@@ -176,6 +184,7 @@ class ArtifactFinder(
     }
 
     companion object {
-        private val EXTERNAL_SOURCES_URL = "https://raw.githubusercontent.com/yigit/ArtifactFinder/master/artifactfinder/external_sources.json"
+        private val EXTERNAL_SOURCES_URL =
+            "https://raw.githubusercontent.com/yigit/ArtifactFinder/master/external_sources.json"
     }
 }
