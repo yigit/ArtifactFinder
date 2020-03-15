@@ -18,10 +18,10 @@ package com.birbit.artifactfinder.external
 
 import com.birbit.artifactfinder.ArtifactSource
 import com.birbit.artifactfinder.vo.Artifactory
+import java.io.InputStream
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import java.io.InputStream
 
 @Serializable
 data class ExternalSourceSpec(
