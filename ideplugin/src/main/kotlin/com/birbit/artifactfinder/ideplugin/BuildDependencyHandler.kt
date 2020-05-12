@@ -17,40 +17,54 @@
 package com.birbit.artifactfinder.ideplugin
 
 import com.android.ide.common.repository.GradleCoordinate
+import com.android.tools.idea.gradle.dependencies.GradleDependencyManager
 import com.android.tools.idea.projectsystem.getModuleSystem
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.module.Module
 
 class BuildDependencyHandler(private val module: Module) {
-    fun addMavenDependency(coordinate: String, onSuccess: () -> Unit, onError: () -> Unit) {
+    fun addMavenDependency(
+        coordinate: String,
+        onSuccess: () -> Unit,
+        onError: (msg: String) -> Unit
+    ) {
         val parsedCoordinate = GradleCoordinate.parseCoordinateString(coordinate)
-
-        module.getModuleSystem().registerDependency(parsedCoordinate)
-
-        // There is no callback from Gradle about the fact that a dependency was registered, so we should check that
-        val resolvedDependency = module.getModuleSystem().getResolvedDependency(parsedCoordinate)
-        if (resolvedDependency != null) {
-            sync()
+        val parsedLatestCoordinate = GradleCoordinate.parseCoordinateString(
+            parsedCoordinate.groupId + ":" + parsedCoordinate.artifactId + ":+"
+        )
+        val gradle = GradleDependencyManager.getInstance(module.project)
+        val existing = module.getModuleSystem().getResolvedDependency(parsedLatestCoordinate)
+        val errorMsg: String? = if (existing == null) {
+            if (gradle.addDependenciesAndSync(module, listOf(parsedCoordinate), null)) {
+                null
+            } else {
+                GENERIC_ERROR
+            }
+            null
+        } else {
+            val cmp = existing.version.compareTo(parsedCoordinate.version)
+            if (cmp < 0) {
+                val updated = gradle.updateLibrariesToVersion(
+                    module,
+                    listOf(parsedCoordinate),
+                    null
+                )
+                if (updated) {
+                    null
+                } else {
+                    GENERIC_ERROR
+                }
+            } else {
+                "A newer version (${existing.version}) already exists"
+            }
+        }
+        if (errorMsg == null) {
             onSuccess()
         } else {
-            onError()
+            onError(errorMsg)
         }
     }
 
-    private fun sync() {
-        DataManager.getInstance().dataContextFromFocusAsync.onSuccess {
-            val am = ActionManager.getInstance()
-            val syncAction = am.getAction("Android.SyncProject")
-            val fakeActionEvent = AnActionEvent(
-                null, it,
-                ActionPlaces.UNKNOWN, Presentation(),
-                ActionManager.getInstance(), 0
-            )
-            syncAction.actionPerformed(fakeActionEvent)
-        }
+    companion object {
+        private const val GENERIC_ERROR = "Gradle Build model cannot be found or is not ready for modifications"
     }
 }
