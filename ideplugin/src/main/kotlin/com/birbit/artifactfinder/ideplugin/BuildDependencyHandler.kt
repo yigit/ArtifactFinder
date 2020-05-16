@@ -39,7 +39,6 @@ class BuildDependencyHandler(private val module: Module) {
             } else {
                 GENERIC_ERROR
             }
-            null
         } else {
             val cmp = existing.version.compareTo(parsedCoordinate.version)
             if (cmp < 0) {

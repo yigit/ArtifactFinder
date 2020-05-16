@@ -24,6 +24,7 @@ dependencies {
     compile libs.coroutinesSwing
     compile libs.coroutines // keep these compile to avoid conflicts via the IJ plugin
     implementation libs.retrofit
+    implementation libs.okHttp // specify this to get the Platform bugfix https://github.com/square/okhttp/pull/6055
     implementation libs.kotlinSerialization
     implementation libs.retrofitKotlinSerialization
     implementation project(path : ":dto", configuration: "default")
@@ -31,13 +32,13 @@ dependencies {
 }
 intellij {
     updateSinceUntilBuild false
-    version "IC-2019.1.2"
+    version "IC-2020.1.1"
     pluginName = 'Artifact Finder'
     plugins = [
-            "Kotlin", "IntelliLang", "android"
+            "Kotlin", "IntelliLang", "android", "java"
     ]
     // Uncomment to test against Android Studio
-    intellij.alternativeIdePath = '/home/yboyar/app/as-canary/android-studio-3.6'
+    intellij.alternativeIdePath = '/home/yboyar/app/as-4.1/android-studio'
 }
 
 patchPluginXml {

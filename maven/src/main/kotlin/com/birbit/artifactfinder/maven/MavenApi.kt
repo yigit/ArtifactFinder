@@ -20,7 +20,6 @@ import com.birbit.artifactfinder.maven.vo.ArtifactMetadata
 import com.birbit.artifactfinder.vo.Artifactory
 import java.util.concurrent.Executors
 import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -49,7 +48,7 @@ internal interface MavenApi {
         }
 
         fun create(artifactory: Artifactory, baseUrl: HttpUrl? = null): MavenApi {
-            val httpUrl = baseUrl ?: artifactory.baseUrl.toHttpUrlOrNull()
+            val httpUrl = baseUrl ?: HttpUrl.get(artifactory.baseUrl)
             return httpUrl?.let {
                 create(it)
             } ?: throw IllegalArgumentException("bad url ${artifactory.baseUrl}")
