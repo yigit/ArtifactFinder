@@ -69,7 +69,7 @@ class ArtifactFinder(
                 .url(EXTERNAL_SOURCES_URL)
                 .build()
         ).execute()
-        return response.body?.byteStream()?.use {
+        return response.body()?.byteStream()?.use {
             val source = ExternalSourceSpec.parse(it)
             if (source.version == ExternalSourceSpec.LATEST_VERSION) {
                 source.asArtifactSources()
