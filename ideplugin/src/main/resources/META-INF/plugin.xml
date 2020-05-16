@@ -17,7 +17,7 @@
 <idea-plugin>
     <id>com.birbit.artifactfinder</id>
     <name>Artifact Finder</name>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <description>
         An Android Studio plugin which allows you to find Maven artifacts by class name, kotlin global
         methods or kotlin extension functions.
