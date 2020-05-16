@@ -28,10 +28,10 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.UI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.*
 import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
-import kotlinx.coroutines.*
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -50,6 +50,20 @@ class SearchArtifactPanelController(
             it.setShowColumns(true)
             it.autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
             it.fillsViewportHeight = true
+//            it.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+//
+//            it.selectionModel.addListSelectionListener {
+//                if (it.valueIsAdjusting) {
+//                    return@addListSelectionListener
+//                }
+//                val searchResult = searchResultModel.getItem(it.firstIndex) ?: return@addListSelectionListener
+//                println(searchResult)
+//                SelectDependencyDetailsWindow(
+//                    project= project,
+//                    module = module,
+//                    searchResult = searchResult
+//                ).buildAndShow()
+//            }
         }
 
         val inputText = JBTextField(initialText)
@@ -105,7 +119,6 @@ class SearchArtifactPanelController(
 
         resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellRenderer =
             ButtonRenderer(icon = AllIcons.General.Add)
-
         resultTable.getColumn(SearchResultTableModel.COL_ADD_DEPENDENCY).cellEditor =
             VersionPopupRenderer(
                 project = project,

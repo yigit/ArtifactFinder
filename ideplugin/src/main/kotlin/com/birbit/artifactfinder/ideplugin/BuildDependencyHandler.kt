@@ -17,6 +17,7 @@
 package com.birbit.artifactfinder.ideplugin
 
 import com.android.ide.common.repository.GradleCoordinate
+import com.android.tools.idea.gradle.dependencies.ConfigurationNameMapper
 import com.android.tools.idea.gradle.dependencies.GradleDependencyManager
 import com.android.tools.idea.projectsystem.getModuleSystem
 import com.intellij.openapi.module.Module
@@ -34,7 +35,11 @@ class BuildDependencyHandler(private val module: Module) {
         val gradle = GradleDependencyManager.getInstance(module.project)
         val existing = module.getModuleSystem().getResolvedDependency(parsedLatestCoordinate)
         val errorMsg: String? = if (existing == null) {
-            if (gradle.addDependenciesAndSync(module, listOf(parsedCoordinate), null)) {
+            val nameMapper = ConfigurationNameMapper { module, name, coordinate ->
+                "testImplementation"
+            }
+
+            if (gradle.addDependenciesWithoutSync(module, listOf(parsedCoordinate), nameMapper)) {
                 null
             } else {
                 GENERIC_ERROR

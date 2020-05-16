@@ -20,11 +20,18 @@ import com.birbit.artifactfinder.ideplugin.SearchResultModel
 import javax.swing.table.DefaultTableModel
 
 class SearchResultTableModel : DefaultTableModel(COLUMNS, 0) {
+    private var items = listOf<SearchResultModel.SearchResult>()
     override fun isCellEditable(row: Int, column: Int): Boolean {
         return getColumnName(column) == COL_ADD_DEPENDENCY
     }
 
+    fun getItem(index:Int) = items.let {
+        if (index < 0 || index >= it.size) null
+        else it[index]
+    }
+
     fun setItems(items: List<SearchResultModel.SearchResult>) {
+        this.items = items
         (rowCount - 1 downTo 0).forEach {
             removeRow(it)
         }

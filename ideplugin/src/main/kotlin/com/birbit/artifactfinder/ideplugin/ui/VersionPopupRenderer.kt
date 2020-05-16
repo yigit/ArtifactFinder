@@ -17,7 +17,6 @@
 package com.birbit.artifactfinder.ideplugin.ui
 
 import com.birbit.artifactfinder.ideplugin.SearchResultModel
-import com.birbit.artifactfinder.ideplugin.VersionSelectionPopupController
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TableUtil
@@ -73,21 +72,14 @@ class VersionPopupRenderer(
     ) {
         val rect = table.getCellRect(row, column, true)
         val point = Point(rect.x, rect.y)
-        VersionSelectionPopupController(
-            result = result,
-            project = project,
-            currentModule = currentModule,
-            callback = object : VersionSelectionPopupController.Callback {
-                override fun onChosen() {
-                    TableUtil.stopEditing(table)
-                    onSelected()
-                }
 
-                override fun onCancel() {
-                    TableUtil.stopEditing(table)
-                }
+        SelectDependencyDetailsWindow(
+            project = project,
+            module = currentModule,
+            searchResult = result,
+            onComplete = {
+                TableUtil.stopEditing(table)
             }
-        ).buildPopup()
-            .show(RelativePoint(table, point))
+        ).buildAndShow(RelativePoint(table, point))
     }
 }
